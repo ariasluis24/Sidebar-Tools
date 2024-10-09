@@ -7,7 +7,9 @@ explorer_path = 'C:\\Windows\\explorer.exe'
 scanner_path = "C:\\Program Files (x86)\\epson\\Epson Scan 2\\Core\\es2launcher.exe"
 web_browser_path = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge_proxy.exe'
 calculator_path = 'C:\\Windows\\System32\\calc.exe'
-network_Test_path = r"C:\\Users\\l.arias\\Documents\\DOCUMENTOS CAJA LUIS ARIAS\\Nueva carpeta\\Python\\Nueva carpeta\\Sidebar Tools\\src\\test.bat"
+network_Test_path = r"C:\\Windows\\System32\\cmd.exe"
+
+ip_address = '8.8.8.8'
 
 web_arg = '--profile-directory=Default'
 web_arg_2 = '--app-id=hnpfjngllnobngcgfapefoaidbinmjnm'
@@ -27,16 +29,17 @@ def open_Web_Browser():
 def open_Explorer():
     subprocess.Popen([explorer_path])
 
-# TODO Make this .bat apear in a new cmd window.
+#// TODO Make this .bat apear in a new cmd window.
 def open_Network_Test():
-    subprocess.Popen(['cmd', '/c', 'start', network_Test_path]) # It's opening already, but is not showing the results of the ping on the cmd window.
+    subprocess.Popen(f'start cmd.exe /K ping {ip_address}', shell=True)
 
 def open_Scanner():
     subprocess.Popen([scanner_path])
 
 #TODO Find a way to open the IGTF Calculator from python.
 def open_igtf_calc():
-    subprocess.Popen([igtf_calc_path])
+    # subprocess.Popen([igtf_calc_path])
+    subprocess.run(["python", igtf_calc_path])
     
 # Windows entity  
 window = Tk()
@@ -77,4 +80,8 @@ scanner_btn.grid(row=5, column=0, padx=3, pady=2, sticky='nwse')
 explorer_btn.grid(row=6, column=0, padx=3, pady=2, sticky='nwse')
 network_btn.grid(row=7, column=0, padx=3, pady=2, sticky='nwse')
 date_label.grid(row=8, column=0, pady=100, sticky='s')
+
+
+
+# Execute windows
 window.mainloop()
