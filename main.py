@@ -110,6 +110,7 @@ network_btn = Button(window, text='Network Test', font=('Arial', 10), width=5, h
 
 scrap_price_btn = Button(window, text='Get Parallel Price', font=('Arial', 10), width=13, height=2, justify='center', command=open_Pararel_Price_Window)
 server_status = Label(window, text='Server Connected', font=('Arial', 8), bg='green')
+date_label = Label(window, text=date_actual, font=('Arial', 10,'bold'))
 
 # // TODO Make this function infinitely run in the background.     
 def ping_Server():
@@ -150,12 +151,6 @@ def ping_Server():
 window.after(0, ping_Server)
 
 
-
-
-
-
-# ping_Server()
-date_label = Label(window, text=date_actual, font=('Arial', 10,'bold'))
 
 # Label Position
 title.grid(row=0, column=0, sticky='nwse')
