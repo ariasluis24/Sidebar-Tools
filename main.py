@@ -1,9 +1,10 @@
 from tkinter import *
+from scrap_price_Parallel import scraping_Parallel
+from pythonping import ping
 import datetime
 import subprocess
 import locale
-# import psutil
-# import time
+import socket
 
 
 locale.setlocale(locale.LC_ALL, 'es_VE')
@@ -66,15 +67,28 @@ def open_Network_Test():
 def open_Tool(tool_path):
     subprocess.Popen([tool_path])
 
+def open_Pararel_Price_Window():
+
+    price_window = Toplevel(window)
+    price_window.title('Parallel Price')
+    price_window.geometry('140x110+950+70')
+    result = scraping_Parallel()
+    price_title = Label(price_window, text='Parallel Price', font=('Arial', 12, 'bold'))
+    scrap_price_label = Label(price_window, text=result, font=('Arial', 12))
+    price_title.grid(row=0, column=0,sticky='nwe')
+    scrap_price_label.grid(row=1, column=0, sticky='nswe')
+
+
 # Windows entity  
+
 window = Tk()
-window.attributes('-topmost',True) # Makes the window always on top.
 
 # Config of window
 # icon = PhotoImage(file='src\\icon.png')
 window.title('Sidebar Tools')
-# window.iconphoto(True, icon)
 window.geometry('230x370+1120+70') # Default size of the window & Position.
+window.attributes('-topmost',True) # Makes the window always on top.
+# window.iconphoto(True, icon)
 # window.minsize(800, 370) # Minimun size of the window
 # window.maxsize(800, 370) # Maximun size of the window
     
@@ -94,6 +108,53 @@ scanner_btn = Button(window, text='Scanner', font=('Arial', 10), width=5, height
 explorer_btn = Button(window, text='File Explorer', font=('Arial', 10), width=5, height=1, justify='center',  command= lambda: open_Tool(explorer_path))
 network_btn = Button(window, text='Network Test', font=('Arial', 10), width=5, height=1, justify='center', command=open_Network_Test)
 
+scrap_price_btn = Button(window, text='Get Parallel Price', font=('Arial', 10), width=13, height=2, justify='center', command=open_Pararel_Price_Window)
+server_status = Label(window, text='Server Connected', font=('Arial', 8), bg='green')
+
+# // TODO Make this function infinitely run in the background.     
+def ping_Server():
+    # ip = '1.125.1.1'
+    ip = 'server' #Special IP used from the local server.
+    try:
+        socket.gethostbyname(ip)
+
+        response = ping(ip , timeout=1, count=1)
+    
+        if response.success():
+            print(f'\n\nPing successful to {ip}, Time: {response.rtt_avg_ms} ms')
+            server_status.config(bg='green')
+            server_status.config(text='Server Connected')
+        else:
+            print(f'\n\nNo response from {ip}')
+            server_status.config(bg='red')
+            server_status.config(text='Server Not Connected')
+        window.after(1000, ping_Server)
+    
+    except socket.gaierror:
+        # Handle DNS resolution failure
+        print( f"Cannot resolve address '{ip}', check your network or DNS settings.")
+        server_status.config(bg='red')
+        server_status.config(text='Server Not Connected')
+        window.after(1000, ping_Server)
+    except RuntimeError as e:
+        # Handle runtime errors from pythonping
+        print(str(e))
+        server_status.config(bg='red')
+        server_status.config(text='Server Not Connected')
+        window.after(1000, ping_Server)
+    except Exception as e:
+        # Catch all other unexpected errors
+        print(f"An error occurred: {str(e)}")
+        window.after(1000, ping_Server)
+
+window.after(0, ping_Server)
+
+
+
+
+
+
+# ping_Server()
 date_label = Label(window, text=date_actual, font=('Arial', 10,'bold'))
 
 # Label Position
@@ -105,7 +166,9 @@ profit_btn.grid(row=4, column=0, padx=3, pady=2, sticky='nwse')
 scanner_btn.grid(row=5, column=0, padx=3, pady=2, sticky='nwse')
 explorer_btn.grid(row=6, column=0, padx=3, pady=2, sticky='nwse')
 network_btn.grid(row=7, column=0, padx=3, pady=2, sticky='nwse')
-date_label.grid(row=8, column=0, pady=100, sticky='s')
+scrap_price_btn.grid(row= 8, column=0, padx=3, pady=2, sticky='nwse')
+server_status.grid(row=9, column=0, pady=10,sticky='s')
+date_label.grid(row=10, column=0, pady=5, sticky='s')
 
 
 
