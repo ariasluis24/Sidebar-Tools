@@ -39,7 +39,7 @@ def open_Tool(tool_path):
     subprocess.Popen(tool_path)
 
 def open_Pararel_Price_Window():
-
+    # TODO Displayed Internet Error if the Internet connection failed when it tried the scrap.
     price_window = Toplevel(window)
     price_window.title('Parallel Price')
     price_window.geometry('180x415+850+70')
@@ -47,8 +47,17 @@ def open_Pararel_Price_Window():
     
     result = scraping_Parallel()
     
-    # Unir los elementos de la lista en un solo string con saltos de línea
-    texto_lista = ''.join([f"{emoji}: {valor}\n" for emoji, valor in result if len(valor) <=15])
+    if isinstance(result, list) == True:
+        # Unir los elementos de la lista en un solo string con saltos de línea
+        texto_lista = ''.join([f"{emoji}: {valor}\n" for emoji, valor in result if len(valor) <=15])
+    
+    elif isinstance(result, str) == True:
+        # 
+        texto_lista = result
+    
+    else:
+        texto_lista = 'An unexpected error occured.'
+    
     price_title = Label(price_window, text='Parallel Price', font=('Arial', 12, 'bold'))
     
     scrap_price_label = Label(price_window, text=texto_lista, font=('Arial', 12), borderwidth=1, relief='groove')
@@ -86,7 +95,7 @@ def star_scraping():
     future2.add_done_callback(handle_scraping_result_Parallel)
 
 def open_BCV_Calculator(): 
-    
+    # // TODO Displayed Internet Error if the Internet connection failed when it tried the scrap.
     global BCV_window, bcv_price, parallel_price
     
     BCV_window = Toplevel(window)
@@ -103,8 +112,8 @@ def open_BCV_Calculator():
     calculate_button = Button(BCV_window, text='Calculate', command=lambda: calculation_BCV_Parallel(sub_total_entry.get()), width=10 )
     delete_button = Button(BCV_window, text='Delete', command=lambda: delete_operation(sub_total_entry, result_operation_BCV, result_operation_Parallel, differences_between_label, differences_percentage_label), width=8)
     
-    bcv_price = Label(BCV_window, text=f'BCV: Loading...', font=('Arial', 10), justify='right', height=4)
-    parallel_price = Label(BCV_window, text=f'$ Parallel: Loading...', font=('Arial', 10), justify='right', height=4)
+    bcv_price = Label(BCV_window, text=f'BCV: Loading...', font=('Arial', 10), justify='center', height=4)
+    parallel_price = Label(BCV_window, text=f'$ Parallel: Loading...', font=('Arial', 10), justify='center', height=4)
     
     result_operation_BCV = Label(BCV_window, text=f'Price BCV:', font=('Arial', 10), justify='right')
     result_operation_Parallel = Label(BCV_window, text=f'Price Parallel:', font=('Arial', 10), justify='right')
@@ -165,6 +174,11 @@ def open_BCV_Calculator():
             result_operation_BCV.grid(row=1, column=1)
             result_operation_Parallel.grid(row=2, column=1)
 
+        except TypeError:
+            result_operation_BCV.config(text=f'Price BCV: Error obteniendo precio')    
+            result_operation_Parallel.config(text=f'Price Parallel: Error obteniendo precio')    
+            result_operation_BCV.grid(row=1, column=1)
+            result_operation_Parallel.grid(row=2, column=1)
 
     #// TODO make the calculator of an amount with both prices BCV & Parallel
     
@@ -196,11 +210,11 @@ title = Label(window, text='Tools', font=('Roboto', 12, 'bold'), justify='center
 igtf_btn = Button(window, text='IGTF Calculator', font=('Arial', 10), width=12, height=1, justify='center', command=open_igtf_calc)
 calculator_btn = Button(window, text='Calculator', font=('Arial', 10), width=12, height=1, justify='center',  command= lambda: open_Tool(calculator_path))
 web_browser_btn = Button(window, text='Web Browser', font=('Arial', 10), width=12, height=1, justify='center',  command= lambda: open_Tool(web_browser_path))
-profit_btn = Button(window, text='Profit', font=('Arial', 10), width=12, height=1, justify='center', command= lambda: open_Tool(profit_path))
+profit_btn = Button(window, text='Profit', font=('Arial', 10), width=12, height=1, justify='center', command= lambda: (open_Tool(profit_path), open_Tool(profit_path)))
 scanner_btn = Button(window, text='Scanner', font=('Arial', 10), width=12, height=1, justify='center',  command= lambda: open_Tool(scanner_path))
 explorer_btn = Button(window, text='File Explorer', font=('Arial', 10), width=12, height=1, justify='center',  command= lambda: open_Tool(explorer_exe_path))
 date_label = Label(window, text=date_actual, font=('Arial', 10,'bold'))
-version_label = Label(window, text='Version: Beta 1.0', font=('Arial', 7))
+version_label = Label(window, text='Version: Beta 1.1', font=('Arial', 7))
 
 
 server_status = Label(window, text='', font=('Arial', 10), bg='green', fg='white')
@@ -212,57 +226,114 @@ scrap_price_btn = Button(window, text='Get Parallel Price', font=('Arial', 10), 
 
 # // TODO Make this function infinitely run in the background.     
 def ping_Server():
-
-    local_server_ip = 'server' #Special local_server_ip used from the local server.
+    local_server_ip = 'server'  # Local server IP or domain.
     
     def ping_and_update():
         response_server = ping(local_server_ip, unit='ms')
-        try:
-            if type(response_server) == float:
-                
-                rounded_response = round(response_server, 2)
-                
-                if response_server > 0 or response_server == 0.0:
-                    # window.after(0, lambda: update_status('Server Connected', f'Ping: {rounded_response} ms', 'green', 'white'))
-                    update_status(server_status, server_ping, 'Server Connected', f'Ping: {rounded_response} ms', 'green', 'white')
-                    profit_btn.config(state='normal')    
-                    
-                    print(f"Reached {local_server_ip} {response_server}")
-                    
-            elif type(response_server) == False:
-                # window.after(0, lambda: update_status('Host Unknown', '-', 'red', 'yellow'))
-
-                update_status(server_status, server_ping, 'Host Unknown', '-', 'red', 'white')
-                profit_btn.config(state=DISABLED)    
-                print(f"Host Unknown {local_server_ip}")
-
-            elif type(response_server) == None:
-                
-                update_status(server_status, server_ping, 'Timed Out', '-', 'red', 'white')
-                profit_btn.config(state=DISABLED)  
-                print(f"Timed Out {local_server_ip}")
-                # window.after(2000, ping_Server)
-            
-            else:
-                update_status(server_status, server_ping, 'Check Ethernet', '-', 'red', 'white')
-                profit_btn.config(state=DISABLED)  
-                print('Check Ethernet')
         
+        try:
+            rounded_response = round(response_server, 2) if isinstance(response_server, float) else None
+
+            
+            # Condition when the server responds correctly for the first time or the connection comes back.
+            if isinstance(response_server, float) and server_status.cget('text') in ['', 'Host Unknown', 'Check Internet', 'Time Out', 'Check Ethernet']:
+                server_status.config(text='Server Connected', fg='white', bg='green')
+                update_status(server_ping, f'Ping: {rounded_response} ms')
+                profit_btn.config(state='normal')
+                print(f"Conected to {local_server_ip} ping: {rounded_response} ms")
+
+            # Condition when the server keeps responding
+            elif isinstance(response_server, float) and server_status.cget('text') == 'Server Connected':
+                update_status(server_ping, f'Ping: {rounded_response} ms')
+                print(f"Conected to {local_server_ip} ping: {rounded_response} ms")
+            
+            # Condition when the server doesnt respond (Disconnection)
+            elif response_server is False:
+                server_status.config(text='Host Unknown', fg='white', bg='red')
+                update_status(server_ping, '-')
+                profit_btn.config(state='disabled')
+                print(f"Server {local_server_ip} not found or disconneted.")
+            # Condition when the server doesnt respond (Timed Out)
+            elif response_server is None:
+                server_status.config(text='Timed Out', fg='white', bg='red')
+                update_status(server_ping, '-')
+                profit_btn.config(state='disabled')
+                print(f"Server {local_server_ip} not found or disconneted.")
+
+
         except TimeoutError as e:
-            print(f"Timeout error occurred: {e}")
+            print(f"Timeout Error: {e}")
         
         except OSError as e:
-            print(f"OS error occurred: {e}")
+            print(f"Error del sistema operativo: {e}")
+            print(f"Operating system Error: {e}")
         
         except Exception as e:
-            print(f"An unexpected error occurred: {e}")   
+            print(f"Unexpected Error: {e}")   
     
     threading.Thread(target=ping_and_update, daemon=True).start()
-    # os.system('cls')
-    window.after(1000, ping_Server)
+    window.after(1000, ping_Server)  # Repeats the ping every second.
 
 def ping_Internet():
+    internet_ip = '8.8.8.8'  # Ip used to do ping and check internet connection.
+    
+    def ping_and_update():
+        response_Internet = ping(internet_ip, unit='ms')
+        
+        try:
+            rounded_response = round(response_Internet, 2) if isinstance(response_Internet, float) else None
 
+            
+            # Condition when the ping to the IP Address responds correctly for the first time or the connection comes back.
+            if isinstance(response_Internet, float) and internet_status.cget('text') in ['', 'Host Unknown', 'Check Internet', 'Timed Out', 'Check Ethernet']:
+                internet_status.config(text='Internet Connected', fg='white', bg='green')
+                update_status(internet_ping, f'Ping: {rounded_response} ms')
+                profit_btn.config(state='normal')
+                print(f"Conected to {internet_ip} ping: {rounded_response} ms")
+
+            # Condition when the IP Address keeps responding to ping
+            elif isinstance(response_Internet, float) and internet_status.cget('text') == 'Internet Connected':
+                update_status(internet_ping, f'Ping: {rounded_response} ms')
+                print(f"Conected to {internet_ip} ping: {rounded_response} ms")
+            
+            # Condition when the IP Address doesnt respond (Disconnection)
+            elif response_Internet is False:
+                internet_status.config(text='Host Unknown', fg='white', bg='red')
+                update_status(internet_ping, '-')
+                profit_btn.config(state='disabled')
+                print(f"Server {internet_ip} not found or disconneted.")
+
+            # Condition when the IP Address doesnt respond (Timed Out)
+            elif response_Internet is None:
+                internet_status.config(text='Timed Out', fg='white', bg='red')
+                update_status(internet_ping, '-')
+                profit_btn.config(state='disabled')
+                print(f"Server {internet_ip} not found or disconneted.")
+
+
+        except TimeoutError as e:
+            print(f"Timeout Error: {e}")
+        
+        except OSError as e:
+            print(f"Error del sistema operativo: {e}")
+            print(f"Operating system Error: {e}")
+        
+        except Exception as e:
+            print(f"Unexpected Error: {e}")   
+    
+    threading.Thread(target=ping_and_update, daemon=True).start()
+    window.after(1000, ping_Internet)  # Repeats the ping every second.
+
+def update_status(label_ping, ping_text=''):
+
+    if ping_text:
+        label_ping.config(text=ping_text)
+
+"""
+
+
+def ping_Internet():
+    # TODO Update only the label where the value of ping (ms) is displayed instead of the whole Label.
     internet_ip= '8.8.8.8' # Ip used to do ping and check internet connection.
     
     def internet_ping_and_update():
@@ -270,36 +341,46 @@ def ping_Internet():
         response_internet = ping(internet_ip, unit='ms')
         
         try:
-            if type(response_internet) == float:
+            if type(response_internet) == float and internet_status.cget('text') == '':
 
+                rounded_response = round(response_internet, 2)
+                
+                internet_status.config(text='Internet Connected', fg='white', bg='green')
+
+                if response_internet > 0 or response_internet == 0.0 and response_internet is not False:
+                    # window.after(0, lambda: update_status('Server Connected', f'Ping: {rounded_response} ms', 'green', 'white'))
+                    update_status(internet_ping, f'Ping: {rounded_response} ms')
+                    print(f"First if Reached {internet_ip} {response_internet}")
+                         
+            elif type(response_internet) == float and internet_status.cget('text') == 'Internet Connected':
+               
                 rounded_response = round(response_internet, 2)
                 
                 if response_internet > 0 or response_internet == 0.0 and response_internet is not False:
                     # window.after(0, lambda: update_status('Server Connected', f'Ping: {rounded_response} ms', 'green', 'white'))
-                    
-                    update_status(internet_status, internet_ping, 'Internet Connected', f'Ping: {rounded_response} ms', 'green', 'white')
-                    
+                    update_status(internet_ping, f'Ping: {rounded_response} ms')
                     print(f"Reached {internet_ip} {response_internet}")
-
+                   
+            
             elif response_internet == False:
                 # window.after(0, lambda: update_status('Host Unknown', '-', 'red', 'yellow'))
 
-                update_status(internet_status, internet_ping, 'Host Unknown', '-', 'red', 'white')
-                    
+                update_status(internet_ping, '-')
+                internet_status.config(text='Host Unknown', fg='white', bg='red')    
                 print(f"Host Unknown {internet_ip}")
 
             elif response_internet == None:
                 # server_status.config(text='Server Timed Out')
                     
-                update_status(internet_status, internet_ping, 'Timed Out', '-', 'red', 'white')
-                    
+                internet_status.config(text='Timed Out', fg='white', bg='red')    
+                update_status(internet_ping, '-')
                 print(f"Timed Out {internet_ip}")
                 
                 # window.after(2000, ping_Server)
             
             else:
-                update_status(internet_status, internet_ping, 'Check Ethernet', '-', 'red', 'white')
-
+                internet_status.config(text='Check Ethernet', fg='white', bg='red')
+                update_status(internet_ping, '-')
                 print('Check Ethernet')
      
         
@@ -318,13 +399,8 @@ def ping_Internet():
     threading.Thread(target=internet_ping_and_update, daemon=True).start()
 
     # os.system('cls')
+"""
 
-def update_status(label_text, label_ping, status_text, ping_text='', bg_color='', fg_color=''):
-    
-    label_text.config(text=status_text, bg=bg_color, fg=fg_color)
-    
-    if ping_text:
-        label_ping.config(text=ping_text)
 
 window.after(0, ping_Server)
 window.after(0, ping_Internet)
