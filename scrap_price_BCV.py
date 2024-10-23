@@ -1,7 +1,3 @@
-# Imported requests, urllib3 & BeatifulSoup to successfully scrap the price of the BCV Page
-import requests, urllib3
-urllib3.disable_warnings()
-from bs4 import BeautifulSoup
 # from configparser import ConfigParser
 
 # Variables
@@ -13,6 +9,10 @@ def scraping_BCV():
     # config = ConfigParser()
     # Scrap part
     try:
+        # Imported requests, urllib3 & BeatifulSoup to successfully scrap the price of the BCV Page
+        import requests, urllib3
+        urllib3.disable_warnings()
+        from bs4 import BeautifulSoup
 
         page_to_scrape = requests.get('https://www.bcv.org.ve', verify=False)
         if page_to_scrape.status_code == 200:
@@ -44,7 +44,7 @@ def scraping_BCV():
             
             # Q.put(price_BCV)
 
-            print(f'Precio de funcion: {price_BCV}') # Result = 36.1883
+            # print(f'Precio de funcion: {price_BCV}') # Result = 36.1883
             
             return price_BCV
         
