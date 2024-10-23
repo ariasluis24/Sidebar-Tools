@@ -8,7 +8,8 @@ import datetime
 import subprocess
 import locale
 import threading
-
+import time
+import gc 
 
 locale.setlocale(locale.LC_ALL, 'es_VE')
 
@@ -19,8 +20,8 @@ web_browser_path = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedg
 calculator_path = 'C:\\Windows\\System32\\calc.exe'
 network_Test_path = "C:\\Windows\\System32\\cmd.exe"
 profit_path = 'P:\\Profit_a\\profit_a.exe'
-
-
+local_server_ip = 'server'  # Local server IP or domain.
+internet_ip = '8.8.8.8'  # Ip used to do ping and check internet connection.
 
 # // TODO Make just one function to open all programs.
 # TODO Change the state of the button if the program is already open.
@@ -39,6 +40,7 @@ def open_Tool(tool_path):
     subprocess.Popen(tool_path)
 
 def open_Pararel_Price_Window():
+
     # TODO Displayed Internet Error if the Internet connection failed when it tried the scrap.
     price_window = Toplevel(window)
     price_window.title('Parallel Price')
@@ -48,6 +50,7 @@ def open_Pararel_Price_Window():
     result = scraping_Parallel()
     
     if isinstance(result, list) == True:
+        texto_lista = None
         # Unir los elementos de la lista en un solo string con saltos de línea
         texto_lista = ''.join([f"{emoji}: {valor}\n" for emoji, valor in result if len(valor) <=15])
     
@@ -66,6 +69,24 @@ def open_Pararel_Price_Window():
     
     scrap_price_label.grid(row=1, column=0, padx=8,sticky='nswe')
 
+    def on_closing_toplevel(price_window):
+        
+        # Ensure widgets are destroyed properly
+        price_title.destroy() 
+        scrap_price_label.destroy()
+
+        
+        # Destroy the price window itself
+        price_window.destroy()
+
+        # Force garbage collection and reset global variables
+        gc.collect()
+        
+        price_window = None
+        texto_lista = None
+    
+    price_window.protocol("WM_DELETE_WINDOW", lambda: on_closing_toplevel(price_window))
+
 def delete_operation(amount, label, label2, label3, label4):
     amount.delete(0, 'end')
     label.config(text='Price BCV:')
@@ -75,113 +96,99 @@ def delete_operation(amount, label, label2, label3, label4):
 
 # To make the scraping of the BCV Price concurrent and avoid freezes on the main thread of the GUI.
 
-def handle_scraping_result_BCV(future):
-    global result_BCV_future
-    result_BCV_future = future.result()
-    bcv_price.config(text=f'BCV: {result_BCV_future} Bs')
-    
-def handle_scraping_result_Parallel(future):
-    global result_Parallel_future
-    result_Parallel_future = future.result()
-    parallel_price.config(text=f'Parallel: {result_Parallel_future} Bs')
 
-def star_scraping():
-    open_BCV_Calculator()
-    
-    future = executor.submit(scraping_BCV)
-    future2 = executor.submit(scraping_Parallel_Calculator)
+class BCVCalculator:
+    def __init__(self, master, executor):
+        self.master = master
+        self.executor = executor
 
-    future.add_done_callback(handle_scraping_result_BCV)
-    future2.add_done_callback(handle_scraping_result_Parallel)
+        self.BCV_window = Toplevel(master)
+        self.BCV_window.title('BCV Price')
+        self.BCV_window.geometry('420x200+650+70')
+        self.BCV_window.iconbitmap('icon.ico')
+        self.BCV_window.columnconfigure(1, weight=1)
 
-def open_BCV_Calculator(): 
-    # // TODO Displayed Internet Error if the Internet connection failed when it tried the scrap.
-    global BCV_window, bcv_price, parallel_price
-    
-    BCV_window = Toplevel(window)
-    BCV_window.title('BCV Price')
-    BCV_window.geometry('420x200+650+70')
-    BCV_window.iconbitmap('icon.ico')
+        self.create_widgets()
+        self.BCV_window.protocol("WM_DELETE_WINDOW", self.on_closing_toplevel)
+        self.start_scraping()
 
-    BCV_window.columnconfigure(1, weight=1)
-    
-    #Labels, Entry, Buttons
-    sub_total_entry = Entry(BCV_window, font=('Arial', 14), width=14, bg='yellow', justify='center')
-    dollar_button = Button(BCV_window, text='$', font=('Roboto', 8,'bold'), width=2, height=1)
-    
-    calculate_button = Button(BCV_window, text='Calculate', command=lambda: calculation_BCV_Parallel(sub_total_entry.get()), width=10 )
-    delete_button = Button(BCV_window, text='Delete', command=lambda: delete_operation(sub_total_entry, result_operation_BCV, result_operation_Parallel, differences_between_label, differences_percentage_label), width=8)
-    
-    bcv_price = Label(BCV_window, text=f'BCV: Loading...', font=('Arial', 10), justify='center', height=4)
-    parallel_price = Label(BCV_window, text=f'$ Parallel: Loading...', font=('Arial', 10), justify='center', height=4)
-    
-    result_operation_BCV = Label(BCV_window, text=f'Price BCV:', font=('Arial', 10), justify='right')
-    result_operation_Parallel = Label(BCV_window, text=f'Price Parallel:', font=('Arial', 10), justify='right')
+    def create_widgets(self):
+        # Labels, Entry, Buttons
+        self.sub_total_entry = Entry(self.BCV_window, font=('Arial', 14), width=14, bg='yellow', justify='center')
+        self.dollar_button = Button(self.BCV_window, text='$', font=('Roboto', 8, 'bold'), width=2, height=1)
+        self.calculate_button = Button(self.BCV_window, text='Calculate', command=self.calculation_BCV_Parallel, width=10)
+        self.delete_button = Button(self.BCV_window, text='Delete', command=self.delete_operation, width=8)
 
-    differences_between_label = Label(BCV_window, font=('Arial', 10), justify='center')
-    differences_percentage_label = Label(BCV_window, font=('Arial', 10), justify='right')
-    
-    # Position
-    # Column 0
-    sub_total_entry.grid(row=1, column=0, pady=5, padx=5, sticky='ns')
-    dollar_button.grid(row=1, column=0, pady=8, padx=7, sticky='ne')
+        self.bcv_price = Label(self.BCV_window, text=f'BCV: Loading...', font=('Arial', 10), justify='center', height=4)
+        self.parallel_price = Label(self.BCV_window, text=f'$ Parallel: Loading...', font=('Arial', 10), justify='center', height=4)
 
-    delete_button.grid(row=2, column=0, padx=5, sticky='es')
-    calculate_button.grid(row=2, column=0, padx=5, sticky='ws')
-    
-    bcv_price.grid(row=3, column=0, sticky='NS')
-    parallel_price.grid(row=4, column=0, sticky='NS')
-    
-    # Column 1
-    result_operation_BCV.grid(row=1, column=1)
-    result_operation_Parallel.grid(row=2, column=1)
-    differences_between_label.grid(row=3, column=1, pady=15)
-    differences_percentage_label.grid(row=4, column=1)
-    
-    def calculation_BCV_Parallel(amount):
-        try:    
+        self.result_operation_BCV = Label(self.BCV_window, text=f'Price BCV:', font=('Arial', 10), justify='right')
+        self.result_operation_Parallel = Label(self.BCV_window, text=f'Price Parallel:', font=('Arial', 10), justify='right')
+        self.differences_between_label = Label(self.BCV_window, font=('Arial', 10), justify='center')
+        self.differences_percentage_label = Label(self.BCV_window, font=('Arial', 10), justify='right')
+
+        # Position
+        # Column 0
+        self.sub_total_entry.grid(row=1, column=0, pady=5, padx=5, sticky='ns')
+        self.dollar_button.grid(row=1, column=0, pady=8, padx=7, sticky='ne')
+        self.delete_button.grid(row=2, column=0, padx=5, sticky='es')
+        self.calculate_button.grid(row=2, column=0, padx=5, sticky='ws')
+        self.bcv_price.grid(row=3, column=0, sticky='NS')
+        self.parallel_price.grid(row=4, column=0, sticky='NS')
+
+        # Column 1
+        self.result_operation_BCV.grid(row=1, column=1)
+        self.result_operation_Parallel.grid(row=2, column=1)
+        self.differences_between_label.grid(row=3, column=1, pady=15)
+        self.differences_percentage_label.grid(row=4, column=1)
+
+    def start_scraping(self):
+        future_BCV = self.executor.submit(scraping_BCV)
+        future_Parallel = self.executor.submit(scraping_Parallel_Calculator)
+
+        future_BCV.add_done_callback(lambda future: self.handle_scraping_result_BCV(future))
+        future_Parallel.add_done_callback(lambda future: self.handle_scraping_result_Parallel(future))
+
+    def handle_scraping_result_BCV(self, future):
+        result_BCV = future.result()
+        self.result_BCV_future = float(result_BCV)
+        self.bcv_price.config(text=f'BCV: {result_BCV} Bs')
+
+    def handle_scraping_result_Parallel(self, future):
+        result_Parallel = future.result()
+        self.result_Parallel_future = float(result_Parallel)
+        self.parallel_price.config(text=f'Parallel: {result_Parallel} Bs')
+
+    def calculation_BCV_Parallel(self):
+        amount = self.sub_total_entry.get()
+        try:
             amount_float = float(amount)
-            result_calculation_BCV = round(Decimal(amount_float * result_BCV_future),2)
-            result_calculation_Parallel = round(Decimal(amount_float * float(result_Parallel_future)),2)
-            difference_between_prices = round(Decimal(result_calculation_Parallel - result_calculation_BCV),2)
+            result_calculation_BCV = round(Decimal(amount_float * self.result_BCV_future), 2)
+            result_calculation_Parallel = round(Decimal(amount_float * float(self.result_Parallel_future)), 2)
+            difference_between_prices = round(Decimal(result_calculation_Parallel - result_calculation_BCV), 2)
 
-            difference_percentage = round(Decimal(((result_calculation_Parallel - result_calculation_BCV)/result_calculation_BCV)*100),2)
-            
-            difference_between_prices_to_BCV = round(Decimal(difference_between_prices / Decimal(result_Parallel_future)),2)
-            difference_between_prices_to_Parallel = round(Decimal(difference_between_prices / Decimal(result_BCV_future)),2)
-            
-            
-            result_operation_BCV.config(text=f'Price BCV: {result_calculation_BCV:n} Bs')    
-            result_operation_Parallel.config(text=f'Price Parallel: {result_calculation_Parallel:n} Bs')    
-            
-            differences_between_label.config(text=f'Gap: {difference_between_prices:n} Bs \nBCV:({difference_between_prices_to_BCV:n}$) Parallel:({difference_between_prices_to_Parallel:n}$) ')    
-            differences_percentage_label.config(text=f'Difference %: {difference_percentage:n}%')    
-            
-            
-            result_operation_BCV.grid(row=1, column=1)
-            result_operation_Parallel.grid(row=2, column=1)
-            differences_between_label.grid(row=3, column=1)
+            difference_percentage = round(Decimal(((result_calculation_Parallel - result_calculation_BCV) / result_calculation_BCV) * 100), 2)
+
+            self.result_operation_BCV.config(text=f'Price BCV: {result_calculation_BCV:n} Bs')
+            self.result_operation_Parallel.config(text=f'Price Parallel: {result_calculation_Parallel:n} Bs')
+
+            self.differences_between_label.config(text=f'Gap: {difference_between_prices:n} Bs')
+            self.differences_percentage_label.config(text=f'Difference %: {difference_percentage:n}%')
 
         except ValueError:
-            result_operation_BCV.config(text=f'Price BCV: Error en Valor Introducido')    
-            result_operation_Parallel.config(text=f'Price Parallel: Error en Valor Introducido')    
-            result_operation_BCV.grid(row=1, column=1)
-            result_operation_Parallel.grid(row=2, column=1)
-        
-        except NameError:
-            result_operation_BCV.config(text=f'Price BCV: Error obteniendo precio')    
-            result_operation_Parallel.config(text=f'Price Parallel: Error obteniendo precio')    
-            result_operation_BCV.grid(row=1, column=1)
-            result_operation_Parallel.grid(row=2, column=1)
+            self.result_operation_BCV.config(text=f'Price BCV: Error en Valor Introducido')
+            self.result_operation_Parallel.config(text=f'Price Parallel: Error en Valor Introducido')
 
-        except TypeError:
-            result_operation_BCV.config(text=f'Price BCV: Error obteniendo precio')    
-            result_operation_Parallel.config(text=f'Price Parallel: Error obteniendo precio')    
-            result_operation_BCV.grid(row=1, column=1)
-            result_operation_Parallel.grid(row=2, column=1)
+    def delete_operation(self):
+        self.sub_total_entry.delete(0, 'end')
+        self.result_operation_BCV.config(text=f'Price BCV:')
+        self.result_operation_Parallel.config(text=f'Price Parallel:')
+        self.differences_between_label.config(text='')
+        self.differences_percentage_label.config(text='')
 
-    #// TODO make the calculator of an amount with both prices BCV & Parallel
-    
+    def on_closing_toplevel(self):
+        self.BCV_window.destroy()
+        gc.collect()
 
 executor = ThreadPoolExecutor(max_workers=2)
 
@@ -214,119 +221,111 @@ profit_btn = Button(window, text='Profit', font=('Arial', 10), width=12, height=
 scanner_btn = Button(window, text='Scanner', font=('Arial', 10), width=12, height=1, justify='center',  command= lambda: open_Tool(scanner_path))
 explorer_btn = Button(window, text='File Explorer', font=('Arial', 10), width=12, height=1, justify='center',  command= lambda: open_Tool(explorer_exe_path))
 date_label = Label(window, text=date_actual, font=('Arial', 10,'bold'))
-version_label = Label(window, text='Version: Beta 1.1', font=('Arial', 7))
+version_label = Label(window, text='Version: Beta 1.2', font=('Arial', 7))
 
 
 server_status = Label(window, text='', font=('Arial', 10), bg='green', fg='white')
 server_ping = Label(window, text='', font=('Arial', 8))
 internet_status = Label(window, text='', font=('Arial', 10), height=1, bg='green', fg='white')
 internet_ping = Label(window, text='', font=('Arial', 8))
-bcv_parallel_btn = Button(window, text='BCV Calculator', font=('Arial', 10), width=5, height=1, justify='center',  command= star_scraping)
+bcv_parallel_btn = Button(window, text='BCV Calculator', font=('Arial', 10), width=5, height=1, justify='center',  command=lambda: BCVCalculator(window, executor))
 scrap_price_btn = Button(window, text='Get Parallel Price', font=('Arial', 10), width=13, height=1, justify='center', command=open_Pararel_Price_Window)
 
 # // TODO Make this function infinitely run in the background.     
+
+
 def ping_Server():
-    local_server_ip = 'server'  # Local server IP or domain.
-    
     def ping_and_update():
-        response_server = ping(local_server_ip, unit='ms')
-        
-        try:
-            rounded_response = round(response_server, 2) if isinstance(response_server, float) else None
-
+        while True:
+            response_server = ping(local_server_ip, unit='ms')
             
-            # Condition when the server responds correctly for the first time or the connection comes back.
-            if isinstance(response_server, float) and server_status.cget('text') in ['', 'Host Unknown', 'Check Internet', 'Time Out', 'Check Ethernet']:
-                server_status.config(text='Server Connected', fg='white', bg='green')
-                update_status(server_ping, f'Ping: {rounded_response} ms')
-                profit_btn.config(state='normal')
-                print(f"Conected to {local_server_ip} ping: {rounded_response} ms")
+            try:
+                rounded_response = round(response_server, 2) if isinstance(response_server, float) else None
 
-            # Condition when the server keeps responding
-            elif isinstance(response_server, float) and server_status.cget('text') == 'Server Connected':
-                update_status(server_ping, f'Ping: {rounded_response} ms')
-                print(f"Conected to {local_server_ip} ping: {rounded_response} ms")
-            
-            # Condition when the server doesnt respond (Disconnection)
-            elif response_server is False:
-                server_status.config(text='Host Unknown', fg='white', bg='red')
-                update_status(server_ping, '-')
-                profit_btn.config(state='disabled')
-                print(f"Server {local_server_ip} not found or disconneted.")
-            # Condition when the server doesnt respond (Timed Out)
-            elif response_server is None:
-                server_status.config(text='Timed Out', fg='white', bg='red')
-                update_status(server_ping, '-')
-                profit_btn.config(state='disabled')
-                print(f"Server {local_server_ip} not found or disconneted.")
+                # Condition when the server responds correctly for the first time or the connection comes back.
+                if isinstance(response_server, float) and server_status.cget('text') in ['', 'Host Unknown', 'Check Internet', 'Time Out', 'Check Ethernet']:
+                    server_status.config(text='Server Connected', fg='white', bg='green')
+                    update_status(server_ping, f'Ping: {rounded_response} ms')
+                    profit_btn.config(state='normal')
+                
 
+                # Condition when the server keeps responding
+                elif isinstance(response_server, float) and server_status.cget('text') == 'Server Connected':
+                    update_status(server_ping, f'Ping: {rounded_response} ms')
+                
+                    
+                # Condition when the server doesnt respond (Disconnection)
+                elif response_server is False:
+                    server_status.config(text='Host Unknown', fg='white', bg='red')
+                    update_status(server_ping, '-')
+                    profit_btn.config(state='disabled')
+                
 
-        except TimeoutError as e:
-            print(f"Timeout Error: {e}")
-        
-        except OSError as e:
-            print(f"Error del sistema operativo: {e}")
-            print(f"Operating system Error: {e}")
-        
-        except Exception as e:
-            print(f"Unexpected Error: {e}")   
-    
+                # Condition when the server doesnt respond (Timed Out)
+                elif response_server is None:
+                    server_status.config(text='Timed Out', fg='white', bg='red')
+                    update_status(server_ping, '-')
+                    profit_btn.config(state='disabled')
+                time.sleep(1)
+
+            except TimeoutError as e:
+                return f"Timeout Error: {e}"
+           
+            except OSError as e:
+                return f"Operating system Error: {e}"
+
+            except Exception as e:
+                return f"Unexpected Error: {e}"  
+
     threading.Thread(target=ping_and_update, daemon=True).start()
-    window.after(1000, ping_Server)  # Repeats the ping every second.
+
 
 def ping_Internet():
-    internet_ip = '8.8.8.8'  # Ip used to do ping and check internet connection.
     
     def ping_and_update():
-        response_Internet = ping(internet_ip, unit='ms')
-        
-        try:
-            rounded_response = round(response_Internet, 2) if isinstance(response_Internet, float) else None
-
+        while True:
+            response_Internet = ping(internet_ip, unit='ms')
             
-            # Condition when the ping to the IP Address responds correctly for the first time or the connection comes back.
-            if isinstance(response_Internet, float) and internet_status.cget('text') in ['', 'Host Unknown', 'Check Internet', 'Timed Out', 'Check Ethernet']:
-                internet_status.config(text='Internet Connected', fg='white', bg='green')
-                update_status(internet_ping, f'Ping: {rounded_response} ms')
-                profit_btn.config(state='normal')
-                print(f"Conected to {internet_ip} ping: {rounded_response} ms")
+            try:
+                rounded_response = round(response_Internet, 2) if isinstance(response_Internet, float) else None
+                
+                # Condition when the ping to the IP Address responds correctly for the first time or the connection comes back.
+                if isinstance(response_Internet, float) and internet_status.cget('text') in ['', 'Host Unknown', 'Check Internet', 'Timed Out', 'Check Ethernet']:
+                    internet_status.config(text='Internet Connected', fg='white', bg='green')
+                    update_status(internet_ping, f'Ping: {rounded_response} ms')
+                    profit_btn.config(state='normal')
+                
+                # Condition when the IP Address keeps responding to ping
+                elif isinstance(response_Internet, float) and internet_status.cget('text') == 'Internet Connected':
+                    update_status(internet_ping, f'Ping: {rounded_response} ms')
+                
+                # Condition when the IP Address doesnt respond (Disconnection)
+                elif response_Internet is False:
+                    internet_status.config(text='Host Unknown', fg='white', bg='red')
+                    update_status(internet_ping, '-')
+                    profit_btn.config(state='disabled')  
 
-            # Condition when the IP Address keeps responding to ping
-            elif isinstance(response_Internet, float) and internet_status.cget('text') == 'Internet Connected':
-                update_status(internet_ping, f'Ping: {rounded_response} ms')
-                print(f"Conected to {internet_ip} ping: {rounded_response} ms")
+                # Condition when the IP Address doesnt respond (Timed Out)
+                elif response_Internet is None:
+                    internet_status.config(text='Timed Out', fg='white', bg='red')
+                    update_status(internet_ping, '-')
+                    profit_btn.config(state='disabled')
+                
+                time.sleep(1)
+                
+            except TimeoutError as e:
+                return f"Timeout Error: {e}"
             
-            # Condition when the IP Address doesnt respond (Disconnection)
-            elif response_Internet is False:
-                internet_status.config(text='Host Unknown', fg='white', bg='red')
-                update_status(internet_ping, '-')
-                profit_btn.config(state='disabled')
-                print(f"Server {internet_ip} not found or disconneted.")
-
-            # Condition when the IP Address doesnt respond (Timed Out)
-            elif response_Internet is None:
-                internet_status.config(text='Timed Out', fg='white', bg='red')
-                update_status(internet_ping, '-')
-                profit_btn.config(state='disabled')
-                print(f"Server {internet_ip} not found or disconneted.")
-
-
-        except TimeoutError as e:
-            print(f"Timeout Error: {e}")
+            except OSError as e:
+                return f"Operating system Error: {e}"
+            
+            except Exception as e:
+                return f"Unexpected Error: {e}" 
         
-        except OSError as e:
-            print(f"Error del sistema operativo: {e}")
-            print(f"Operating system Error: {e}")
-        
-        except Exception as e:
-            print(f"Unexpected Error: {e}")   
-    
     threading.Thread(target=ping_and_update, daemon=True).start()
-    window.after(1000, ping_Internet)  # Repeats the ping every second.
 
 def update_status(label_ping, ping_text=''):
-
-    if ping_text:
+    if label_ping.cget('text') != ping_text:  # Update only if different
         label_ping.config(text=ping_text)
 
 """
@@ -401,10 +400,8 @@ def ping_Internet():
     # os.system('cls')
 """
 
-
 window.after(0, ping_Server)
 window.after(0, ping_Internet)
-
 
 # Label Position
 # Column 0

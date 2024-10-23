@@ -1,25 +1,26 @@
-# Imported requests, urllib3 & BeatifulSoup to successfully scrap the price of the BCV Page
-import requests, urllib3, time
-inicio = time.time()
-urllib3.disable_warnings()
-from bs4 import BeautifulSoup
-from configparser import ConfigParser
-
 # # Variables
 # file = 'src\\config.ini'
 # now = datetime.datetime.now()
 
-
 def scraping_Parallel():
-    config = ConfigParser()
+    
     # Scrap part
-
     try:
+        # Imported requests, urllib3 & BeatifulSoup to successfully scrap the price of the BCV Page
+        import requests, urllib3
+        urllib3.disable_warnings()
+        from bs4 import BeautifulSoup
+        # from configparser import ConfigParser
+        # config = ConfigParser()
+        
+        page_to_scrape = None
+        soup = None
+        last_results = None
+        
         page_to_scrape = requests.get('https://t.me/s/enparalelovzlatelegram', verify=False)
         soup = BeautifulSoup(page_to_scrape.text, 'html.parser')
         #TODO Use status code for execeptions. https://github.com/terremoth/get-dollar-value-py/blob/master/dolar-value.py
         if page_to_scrape.status_code == 200:
-            print(page_to_scrape.status_code)
 
             # Lista de emojis que queremos filtrar
             emojis_requeridos = {'🗓', '🕒', '💵', '🔻','🔺','🟰'}
@@ -57,8 +58,8 @@ def scraping_Parallel():
                         # Almacenar el emoji y su texto en la lista de resultados
                         resultados.append([emoji, text])
 
-            # Takes on the last 17 results.
-            last_results = resultados[-17:]
+            # Takes on the last 18 results.
+            last_results = resultados[-18:]
             
             # # Print the last emojis and its text
             # for emoji, text in last_results:
@@ -77,13 +78,18 @@ def scraping_Parallel():
 
 
 def scraping_Parallel_Calculator():
-    config = ConfigParser()
     # Scrap part
     #TODO Use status code for execeptions. https://github.com/terremoth/get-dollar-value-py/blob/master/dolar-value.py
     try:
+        # Imported requests, urllib3 & BeatifulSoup to successfully scrap the price of the BCV Page
+        import requests, urllib3
+        urllib3.disable_warnings()
+        from bs4 import BeautifulSoup
+        # from configparser import ConfigParser
+        # config = ConfigParser()
         page_to_scrape = requests.get('https://t.me/s/enparalelovzlatelegram', verify=False)
         if page_to_scrape.status_code == 200:
-            print(page_to_scrape.status_code)
+            # print(page_to_scrape.status_code)
             soup = BeautifulSoup(page_to_scrape.text, 'html.parser')
 
             # Lista de emojis que queremos filtrar
@@ -102,9 +108,16 @@ def scraping_Parallel_Calculator():
                     # Comprobar si el emoji es uno de los requeridos
                     if emoji in emojis_requeridos:
                         # Buscar el siguiente texto relevante
+                        # if len(next_text) < 9:
                         next_text = i_tag.find_next_sibling(string=True)
-                        text = next_text.strip() if next_text else 'Texto no encontrado'
-
+                        
+                        # If the length of the string next to the emoji is greater than 18 characters, replace the text with error.
+                        if len(next_text) > 18:
+                            next_text = 'Error.'
+                        
+                        # If not, strips the text and continous the extract of the price.
+                        else:
+                            text = next_text.strip() if next_text else 'Texto no encontrado'
                         # Almacenar el emoji y su texto en la lista de resultados
                         resultados.append([emoji, text])
 
