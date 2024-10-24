@@ -200,7 +200,7 @@ window = Tk()
 # Config of window
 # icon = PhotoImage(file='icon.ico')
 window.title('Sidebar Tools')
-window.geometry('235x250+1120+290') # Default size of the window & Position.
+window.geometry('188x200+1163+290') # Default size of the window & Position.
 window.attributes('-topmost',True) # Makes the window always on top.
 window.iconbitmap('icon.ico')
 # window.minsize(800, 370) # Minimun size of the window
@@ -212,24 +212,22 @@ date_actual = now.strftime('%a %d/%b/%y')
 
 # Creating Labels
 
-title = Label(window, text='Tools', font=('Roboto', 12, 'bold'), justify='center', width=10)
-
-igtf_btn = Button(window, text='IGTF Calculator', font=('Arial', 10), width=12, height=1, justify='center', command=open_igtf_calc)
-calculator_btn = Button(window, text='Calculator', font=('Arial', 10), width=12, height=1, justify='center',  command= lambda: open_Tool(calculator_path))
-web_browser_btn = Button(window, text='Web Browser', font=('Arial', 10), width=12, height=1, justify='center',  command= lambda: open_Tool(web_browser_path))
-profit_btn = Button(window, text='Profit', font=('Arial', 10), width=12, height=1, justify='center', command= lambda: (open_Tool(profit_path), open_Tool(profit_path)))
-scanner_btn = Button(window, text='Scanner', font=('Arial', 10), width=12, height=1, justify='center',  command= lambda: open_Tool(scanner_path))
-explorer_btn = Button(window, text='File Explorer', font=('Arial', 10), width=12, height=1, justify='center',  command= lambda: open_Tool(explorer_exe_path))
-date_label = Label(window, text=date_actual, font=('Arial', 10,'bold'))
-version_label = Label(window, text='Version: Beta 1.2', font=('Arial', 7))
+igtf_btn = Button(window, text='IGTF Calculator', font=('Arial', 8), width=12, height=1, justify='center', command=open_igtf_calc)
+calculator_btn = Button(window, text='Calculator', font=('Arial', 8), width=12, height=1, justify='center',  command= lambda: open_Tool(calculator_path))
+web_browser_btn = Button(window, text='Web Browser', font=('Arial', 8), width=12, height=1, justify='center',  command= lambda: open_Tool(web_browser_path))
+profit_btn = Button(window, text='Profit', font=('Arial', 8), width=12, height=1, justify='center', command= lambda: (open_Tool(profit_path), open_Tool(profit_path)))
+scanner_btn = Button(window, text='Scanner', font=('Arial', 8), width=12, height=1, justify='center',  command= lambda: open_Tool(scanner_path))
+explorer_btn = Button(window, text='File Explorer', font=('Arial', 8), width=12, height=1, justify='center',  command= lambda: open_Tool(explorer_exe_path))
+date_label = Label(window, text=date_actual, font=('Arial', 8,'bold'))
+version_label = Label(window, text='Version: Beta 1.3', font=('Arial', 7), width=12, height=1, justify='center')
 
 
-server_status = Label(window, text='', font=('Arial', 10), bg='green', fg='white')
-server_ping = Label(window, text='', font=('Arial', 8))
-internet_status = Label(window, text='', font=('Arial', 10), height=1, bg='green', fg='white')
-internet_ping = Label(window, text='', font=('Arial', 8))
-bcv_parallel_btn = Button(window, text='BCV Calculator', font=('Arial', 10), width=5, height=1, justify='center',  command=lambda: BCVCalculator(window, executor))
-scrap_price_btn = Button(window, text='Get Parallel Price', font=('Arial', 10), width=13, height=1, justify='center', command=open_Pararel_Price_Window)
+server_status = Label(window, text='', font=('Arial', 8), width=15, height=1 ,bg='green', fg='white')
+server_ping = Label(window, text='', font=('Arial', 8), height=1)
+internet_status = Label(window, text='', font=('Arial', 8), height=1, bg='green', fg='white')
+internet_ping = Label(window, text='', font=('Arial', 8), height=1)
+bcv_parallel_btn = Button(window, text='BCV Calculator', font=('Arial', 8), width=14, height=1, justify='center',  command=lambda: BCVCalculator(window, executor))
+scrap_price_btn = Button(window, text='Get Parallel Price', font=('Arial', 8), width=14, height=1, justify='center', command=open_Pararel_Price_Window)
 
 # // TODO Make this function infinitely run in the background.     
 
@@ -407,24 +405,23 @@ window.after(0, ping_Internet)
 # Column 0
 
 # window.columnconfigure(0, weight=1)
-title.grid(row=0, column=0, columnspan=2,sticky='nwse')
-igtf_btn.grid(row=1, column=0, padx=3, pady=2, sticky='')
-calculator_btn.grid(row=2, column=0, padx=3, pady=2,sticky='')
-web_browser_btn.grid(row=3, column=0, padx=3, pady=2,sticky='')
-profit_btn.grid(row=4, column=0, padx=3, pady=2, sticky='')
-scanner_btn.grid(row=5, column=0, padx=3, pady=2, sticky='')
-explorer_btn.grid(row=6, column=0, padx=3, pady=2)
-date_label.grid(row=9, column=0, pady=5, sticky='s')
+igtf_btn.grid(row=0, column=0, padx=3, pady=2, sticky='')
+calculator_btn.grid(row=1, column=0, padx=3, pady=2,sticky='')
+web_browser_btn.grid(row=2, column=0, padx=3, pady=2,sticky='')
+profit_btn.grid(row=3, column=0, padx=3, pady=2, sticky='')
+scanner_btn.grid(row=4, column=0, padx=3, pady=2, sticky='')
+explorer_btn.grid(row=5, column=0, padx=3, pady=2)
+date_label.grid(row=6, column=0, pady=1, sticky='ns')
 
 
 # Column 1
-server_status.grid(row=1, column=1, pady=5, sticky='we')
-server_ping.grid(row=2, column=1, sticky='we')
-internet_status.grid(row=3, column=1, sticky='we')
-internet_ping.grid(row=4, column=1, sticky='we')
-bcv_parallel_btn.grid(row=5, column=1, padx=3, pady=2, sticky='nwse')
-scrap_price_btn.grid(row= 6, column=1, padx=3, pady=2, sticky='nwse')
-version_label.grid(row=9, column=1)
+server_status.grid(row=0, column=1, pady=5, sticky='w')
+server_ping.grid(row=1, column=1, padx=15, sticky='w')
+internet_status.grid(row=2, column=1, sticky='w')
+internet_ping.grid(row=3, column=1, padx=10, sticky='w')
+bcv_parallel_btn.grid(row=4, column=1, padx=1, pady=2, sticky='w')
+scrap_price_btn.grid(row= 5, column=1, padx=1, pady=2, sticky='w')
+version_label.grid(row=6, column=1, padx=10, pady=1, sticky='w')
 
 
 # Execute windows
