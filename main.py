@@ -13,7 +13,7 @@ import gc
 
 locale.setlocale(locale.LC_ALL, 'es_VE')
 
-igtf_calc_path = "C:\\Users\\l.arias\\Documents\\DOCUMENTOS CAJA LUIS ARIAS\\Nueva carpeta\\Python\\Nueva carpeta\\IGTF-Calc\\GUI.py"
+igtf_calc_path = "src\\GUI.exe"
 explorer_exe_path = "C:\\Windows\\explorer.exe"
 scanner_path = "C:\\Program Files (x86)\\epson\\Epson Scan 2\\Core\\es2launcher.exe"
 web_browser_path = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
@@ -26,9 +26,6 @@ internet_ip = '8.8.8.8'  # Ip used to do ping and check internet connection.
 # // TODO Make just one function to open all programs.
 # TODO Change the state of the button if the program is already open.
 
-# // TODO Find a way to open the IGTF Calculator from python.
-def open_igtf_calc():
-    subprocess.Popen(["python", igtf_calc_path])
 
 #// TODO Make this .bat apear in a new cmd window.
 def open_Network_Test():
@@ -212,14 +209,14 @@ date_actual = now.strftime('%a %d/%b/%y')
 
 # Creating Labels
 
-igtf_btn = Button(window, text='IGTF Calculator', font=('Arial', 8), width=12, height=1, justify='center', command=open_igtf_calc)
+igtf_btn = Button(window, text='IGTF Calculator', font=('Arial', 8), width=12, height=1, justify='center', command= lambda: open_Tool(igtf_calc_path))
 calculator_btn = Button(window, text='Calculator', font=('Arial', 8), width=12, height=1, justify='center',  command= lambda: open_Tool(calculator_path))
 web_browser_btn = Button(window, text='Web Browser', font=('Arial', 8), width=12, height=1, justify='center',  command= lambda: open_Tool(web_browser_path))
 profit_btn = Button(window, text='Profit', font=('Arial', 8), width=12, height=1, justify='center', command= lambda: (open_Tool(profit_path), open_Tool(profit_path)))
 scanner_btn = Button(window, text='Scanner', font=('Arial', 8), width=12, height=1, justify='center',  command= lambda: open_Tool(scanner_path))
 explorer_btn = Button(window, text='File Explorer', font=('Arial', 8), width=12, height=1, justify='center',  command= lambda: open_Tool(explorer_exe_path))
 date_label = Label(window, text=date_actual, font=('Arial', 8,'bold'))
-version_label = Label(window, text='Version: Beta 1.3', font=('Arial', 7), width=12, height=1, justify='center')
+version_label = Label(window, text='Version: Beta 1.4', font=('Arial', 7), width=12, height=1, justify='center')
 
 
 server_status = Label(window, text='', font=('Arial', 8), width=15, height=1 ,bg='green', fg='white')
@@ -276,7 +273,6 @@ def ping_Server():
                 return f"Unexpected Error: {e}"  
 
     threading.Thread(target=ping_and_update, daemon=True).start()
-
 
 def ping_Internet():
     
