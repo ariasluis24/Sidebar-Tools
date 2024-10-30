@@ -76,7 +76,6 @@ def scraping_Parallel():
         
         print(e)
 
-
 def scraping_Parallel_Calculator():
     # Scrap part
     #TODO Use status code for execeptions. https://github.com/terremoth/get-dollar-value-py/blob/master/dolar-value.py
@@ -87,30 +86,34 @@ def scraping_Parallel_Calculator():
         from bs4 import BeautifulSoup
         # from configparser import ConfigParser
         # config = ConfigParser()
-        page_to_scrape = requests.get('https://t.me/s/enparalelovzlatelegram', verify=False)
-        if page_to_scrape.status_code == 200:
-            # print(page_to_scrape.status_code)
-            soup = BeautifulSoup(page_to_scrape.text, 'html.parser')
+        page_to_scrape2 = None
+        soup2 = None
+        last_result = None
+
+        page_to_scrape2 = requests.get('https://t.me/s/enparalelovzlatelegram', verify=False)
+        soup2 = BeautifulSoup(page_to_scrape2.text, 'html.parser')
+        if page_to_scrape2.status_code == 200:
 
             # Lista de emojis que queremos filtrar
             emojis_requeridos = {'💵'}
 
             # Lista para almacenar los resultados que cumplen los criterios
             resultados = []
-
+            
             # Recorrer los elementos <i> y filtrar por los criterios deseados
-            for i_tag in soup.find_all('i', class_='emoji'):
+            for i_tag2 in soup2.find_all('i', class_='emoji'): 
                 # Verificar si tiene la propiedad 'background-image:url'
-                style = i_tag.get('style', '')
-                if 'background-image:url' in style:
-                    emoji = i_tag.get_text(strip=True)  # Obtener el emoji
-
+                style = i_tag2.get('style', '')
+               
+                if "background-image:url('//telegram.org/img/emoji/40/F09F92B5.png')" in style:
+                    emoji = i_tag2.get_text(strip=True)  # Obtener el emoji
                     # Comprobar si el emoji es uno de los requeridos
                     if emoji in emojis_requeridos:
                         # Buscar el siguiente texto relevante
                         # if len(next_text) < 9:
-                        next_text = i_tag.find_next_sibling(string=True)
-                        
+                        # print(next_text)
+                        next_text = i_tag2.find_next_sibling(string=True)
+                            
                         # If the length of the string next to the emoji is greater than 18 characters, replace the text with error.
                         if len(next_text) > 18:
                             next_text = 'Error.'
@@ -119,7 +122,7 @@ def scraping_Parallel_Calculator():
                         else:
                             text = next_text.strip() if next_text else 'Texto no encontrado'
                         # Almacenar el emoji y su texto en la lista de resultados
-                        resultados.append([emoji, text])
+                            resultados.append([emoji, text])
 
             # Takes on the last result (string).
             last_result = resultados[-1:]
@@ -133,7 +136,7 @@ def scraping_Parallel_Calculator():
             # Replace the , of the text with a . to be usable as a float.
             return cut_str.replace(',', '.')
         else:
-            return f'''Failed to load price\nHTTP code {page_to_scrape.status_code}'''
+            return f'''Failed to load price\nHTTP code {page_to_scrape2.status_code}'''
     
     except Exception as e:
         print(e)

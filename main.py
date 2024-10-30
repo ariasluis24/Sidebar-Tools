@@ -14,6 +14,7 @@ import gc
 
 locale.setlocale(locale.LC_ALL, 'es_VE')
 
+# Variables to use.
 igtf_calc_path = "src\\GUI.exe"
 explorer_exe_path = "C:\\Windows\\explorer.exe"
 scanner_path = "C:\\Program Files (x86)\\epson\\Epson Scan 2\\Core\\es2launcher.exe"
@@ -23,17 +24,13 @@ network_Test_path = "C:\\Windows\\System32\\cmd.exe"
 profit_path = 'P:\\Profit_a\\profit_a.exe'
 local_server_ip = 'server'  # Local server IP or domain.
 internet_ip = '8.8.8.8'  # Ip used to do ping and check internet connection.
+hide_event = threading.Event()
+ping_thread = None
+ping_thread_two = None
 
-# // TODO Make just one function to open all programs.
+
 # TODO Change the state of the button if the program is already open.
 
-
-#// TODO Make this .bat apear in a new cmd window.
-def open_Network_Test():
-    # subprocess.Popen(f'start cmd.exe /K ping {1000}', shell=True)
-    pass
-
-# // TODO Make a way to check if there is connection to the server in order to open profit.
 def open_Tool(tool_path):
     subprocess.Popen(tool_path)
 
@@ -93,7 +90,7 @@ def delete_operation(amount, label, label2, label3, label4):
     label4.config(text='')
 
 def open_about_me():
-    messagebox.showinfo(title=None, message='Sidebar Tools 1.5\nMade by Luis Arias\n2024 ©')
+    messagebox.showinfo(title=None, message='Sidebar Tools 1.6\nMade by Luis Arias\n2024 ©')
 
 
 # To make the scraping of the BCV Price concurrent and avoid freezes on the main thread of the GUI.
@@ -110,7 +107,7 @@ class BCVCalculator:
 
         self.create_widgets()
         self.BCV_window.protocol("WM_DELETE_WINDOW", self.on_closing_toplevel)
-        self.start_scraping()
+        self.shown_scraping()
 
     def create_widgets(self):
         # Labels, Entry, Buttons
@@ -142,7 +139,7 @@ class BCVCalculator:
         self.differences_between_label.grid(row=3, column=1, pady=15)
         self.differences_percentage_label.grid(row=4, column=1)
 
-    def start_scraping(self):
+    def shown_scraping(self):
         future_BCV = self.executor.submit(scraping_BCV)
         future_Parallel = self.executor.submit(scraping_Parallel_Calculator)
 
@@ -190,20 +187,15 @@ class BCVCalculator:
         self.BCV_window.destroy()
         gc.collect()
 
-# // TODO Make every time the version is clicked open a mini windows showing who made the program. (My own data.)
-
 executor = ThreadPoolExecutor(max_workers=2)
-
 
 # Windows entity  
 
 window = Tk()
 
 # Config of window
-# icon = PhotoImage(file='icon.ico')
 window.title('Sidebar Tools')
-window.geometry('340x90+600+635') #To use 400x50
-# window.geometry('188x200+1163+290') # Default size of the window & Position.
+window.geometry('340x90+600+635') # Default size of the window & Position.
 window.attributes('-topmost',True) # Makes the window always on top.
 window.iconbitmap('icon.ico')
 window.config(bg='#121212') # Change the background color of the main window.
@@ -227,30 +219,31 @@ date_actual = now.strftime('%a %d/%b/%y')
 
 # Creating Labels
 
+close_btn = Button(window, text='Close', font=('Arial', 7), bg='#121212', fg='white', command=window.destroy)
+
 igtf_btn = Button(window, image=IGTF_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command= lambda: open_Tool(igtf_calc_path))
 calculator_btn = Button(window, image=calculator_icon, font=('Arial', 8), width=25, height=27, justify='center', bg='#121212', command= lambda: open_Tool(calculator_path))
 web_browser_btn = Button(window, image=web_browser_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command= lambda: open_Tool(web_browser_path))
 profit_btn = Button(window, image=profit_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command= lambda: (open_Tool(profit_path), open_Tool(profit_path)))
 scanner_btn = Button(window, image=scanner_icon, font=('Arial', 8), width=25, height=27, justify='center', bg='#121212', command= lambda: open_Tool(scanner_path))
 explorer_btn = Button(window, image=explorer_icon, font=('Arial', 8), width=25, height=27, justify='center', bg='#121212', fg='white', command= lambda: open_Tool(explorer_exe_path))
-date_label = Label(window, text=date_actual, font=('Arial', 8,'bold'), bg='#121212', fg='white')
-close_btn = Button(window, text='Close', font=('Arial', 7), bg='#121212', fg='white', command=window.destroy)
-version_label = Button(window, text='Version: Beta 1.5', font=('Arial', 7), width=12, height=1, bg='#121212' ,fg='white', relief=FLAT,justify='center', command=open_about_me )
-
-
-server_status = Label(window, text='', font=('Arial', 7), width=15, height=1 ,bg='green', fg='white')
-server_ping = Label(window, text='', font=('Arial', 7), height=1, bg='#121212' ,fg='white')
-internet_status = Label(window, text='', font=('Arial', 7), width=15, height=1, bg='green', fg='white')
-internet_ping = Label(window, text='', font=('Arial', 7), height=1, bg='#121212' ,fg='white')
 bcv_parallel_calc_btn = Button(window, image=bcv_icon, font=('Arial', 8), width=30, height=27, justify='center', command=lambda: BCVCalculator(window, executor))
 parallel_price_btn = Button(window, image=parallel_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command=open_Pararel_Price_Window)
 
-# // TODO Make this function infinitely run in the background.     
+date_label = Label(window, text=date_actual, font=('Arial', 8,'bold'), bg='#121212', fg='white')
+version_label = Button(window, text='Version: Beta 1.6', font=('Arial', 7), width=12, bg='#121212', fg='white', relief=FLAT, justify='center', command=open_about_me )
+
+
+server_status = Label(window, text='', font=('Arial', 7), width=15, height=1, bg='green', fg='white')
+server_ping = Label(window, text='', font=('Arial', 7), bg='#121212', fg='white')
+internet_status = Label(window, text='', font=('Arial', 7), width=15, height=1, bg='green', fg='white')
+internet_ping = Label(window, text='', font=('Arial', 7), bg='#121212', fg='white')
 
 
 def ping_Server():
+    global ping_thread
     def ping_and_update():
-        while True:
+        while not hide_event.is_set():
             response_server = ping(local_server_ip, unit='ms')
             
             try:
@@ -291,12 +284,15 @@ def ping_Server():
             except Exception as e:
                 return f"Unexpected Error: {e}"  
 
-    threading.Thread(target=ping_and_update, daemon=True).start()
+    if ping_thread is None or not ping_thread.is_alive():
+        hide_event.clear()  # Reset the hide event
+        ping_thread = threading.Thread(target=ping_and_update, daemon=True)
+        ping_thread.start()
 
 def ping_Internet():
-    
+    global ping_thread_two
     def ping_and_update():
-        while True:
+        while not hide_event.is_set():
             response_Internet = ping(internet_ip, unit='ms')
             
             try:
@@ -335,7 +331,10 @@ def ping_Internet():
             except Exception as e:
                 return f"Unexpected Error: {e}" 
         
-    threading.Thread(target=ping_and_update, daemon=True).start()
+    if ping_thread_two is None or not ping_thread_two.is_alive():
+        hide_event.clear()  # Reset the hide event
+        ping_thread_two = threading.Thread(target=ping_and_update, daemon=True)
+        ping_thread_two.start()
 
 def update_status(label_ping, ping_text=''):
     if label_ping.cget('text') != ping_text:  # Update only if different
@@ -352,88 +351,92 @@ def on_drag(event):
     y = event.y_root - window.y_offset
     window.geometry(f"+{x}+{y}")
 
+def hide():
+    # Stops the threads of the functions ping_Internet & ping_Server
+    hide_event.set()
 
-"""
+    # Change the size of the window
+    window.geometry('340x40+600+685')
 
+    # Unmap all the buttons of the first 2 rows
+    hide_btn.grid_forget()
 
-def ping_Internet():
-    # TODO Update only the label where the value of ping (ms) is displayed instead of the whole Label.
-    internet_ip= '8.8.8.8' # Ip used to do ping and check internet connection.
+    server_status.grid_forget()
+    server_ping.grid_forget()
+
+    internet_status.grid_forget()
+    internet_ping.grid_forget()
+
+    date_label.grid_forget()
+    version_label.grid_forget()
+
+    # Change the position of the tools buttons to be displayed on a new windows size
+    shown_btn.grid(row=0, column=0, pady=5, sticky='n')
+    close_btn.grid(row=0, column=0, padx=2, pady=0, sticky='s')
+
+    igtf_btn.grid(row=0, column=1)
+
+    calculator_btn.grid(row=0, column=2, padx=2, pady=5, sticky='w')
+    web_browser_btn.grid(row=0, column=3, padx=2, pady=5)
+    profit_btn.grid(row=0, column=4, padx=2, pady=5, sticky='e')
+
+    scanner_btn.grid(row=0, column=5, padx=2, pady=5, sticky='w')
+    explorer_btn.grid(row=0, column=6, padx=2, pady=5, sticky='')
+    bcv_parallel_calc_btn.grid(row=0, column=7, padx=2, pady=5, sticky='e')
+
+    parallel_price_btn.grid(row=0, column=8, padx=2, pady=5, sticky='w')
+
+def shown():
+    # Start both functions creating 2 new threads.
+    ping_Internet()
+    ping_Server()
+
+    # Change the size of the window.
+    window.geometry('340x90+600+635')
     
-    def internet_ping_and_update():
-
-        response_internet = ping(internet_ip, unit='ms')
-        
-        try:
-            if type(response_internet) == float and internet_status.cget('text') == '':
-
-                rounded_response = round(response_internet, 2)
-                
-                internet_status.config(text='Internet Connected', fg='white', bg='green')
-
-                if response_internet > 0 or response_internet == 0.0 and response_internet is not False:
-                    # window.after(0, lambda: update_status('Server Connected', f'Ping: {rounded_response} ms', 'green', 'white'))
-                    update_status(internet_ping, f'Ping: {rounded_response} ms')
-                    print(f"First if Reached {internet_ip} {response_internet}")
-                         
-            elif type(response_internet) == float and internet_status.cget('text') == 'Internet Connected':
-               
-                rounded_response = round(response_internet, 2)
-                
-                if response_internet > 0 or response_internet == 0.0 and response_internet is not False:
-                    # window.after(0, lambda: update_status('Server Connected', f'Ping: {rounded_response} ms', 'green', 'white'))
-                    update_status(internet_ping, f'Ping: {rounded_response} ms')
-                    print(f"Reached {internet_ip} {response_internet}")
-                   
-            
-            elif response_internet == False:
-                # window.after(0, lambda: update_status('Host Unknown', '-', 'red', 'yellow'))
-
-                update_status(internet_ping, '-')
-                internet_status.config(text='Host Unknown', fg='white', bg='red')    
-                print(f"Host Unknown {internet_ip}")
-
-            elif response_internet == None:
-                # server_status.config(text='Server Timed Out')
-                    
-                internet_status.config(text='Timed Out', fg='white', bg='red')    
-                update_status(internet_ping, '-')
-                print(f"Timed Out {internet_ip}")
-                
-                # window.after(2000, ping_Server)
-            
-            else:
-                internet_status.config(text='Check Ethernet', fg='white', bg='red')
-                update_status(internet_ping, '-')
-                print('Check Ethernet')
-     
-        
-        except TimeoutError as e:
-            print(f"Timeout error occurred: {e}")
-        
-        except OSError as e:
-            print(f"OS error occurred: {e}")
-        
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+    # Unmap button.
+    shown_btn.grid_forget()
     
+    # Map button again to its initial values.
 
-    window.after(1000, ping_Internet)
+    hide_btn.grid(row=0, column=0, pady=5, ipadx=0, ipady=0)
 
-    threading.Thread(target=internet_ping_and_update, daemon=True).start()
+    igtf_btn.grid(row=2, column=0)
 
-    # os.system('cls')
-"""
+    calculator_btn.grid(row=2, column=1 ,sticky='w')
+    web_browser_btn.grid(row=2, column=1)
+    profit_btn.grid(row=2, column=1, sticky='e')
 
-window.after(0, ping_Server)
-window.after(0, ping_Internet)
+    scanner_btn.grid(row=2, column=2, sticky='w')
+    explorer_btn.grid(row=2, column=2, padx=3, sticky='')
+    bcv_parallel_calc_btn.grid(row=2, column=2, sticky='e')
+
+    parallel_price_btn.grid(row=2, column=3, sticky='w')
+
+
+    # Row 0, 1
+    close_btn.grid(row=1, column=0, padx= 5, pady=0, sticky='n')
+
+    server_status.grid(row=0, column=1, padx=3,  pady=1, sticky='')
+    server_ping.grid(row=1, column=1, padx=0,  pady=1, sticky='n')
+
+    internet_status.grid(row=0, column=2, padx=5, pady=1, sticky='')
+    internet_ping.grid(row=1, column=2, padx=0, pady=1, sticky='n')
+
+    version_label.grid(row=1, column=3, padx=2, pady=1, sticky='n')
+    date_label.grid(row=0, column=3, pady=1, sticky='')
+
+hide_btn = Button(window, text='▼', font=('Arial', 6), width=2, bg='#121212', fg='white', command=hide)
+shown_btn = Button(window, text='▲', font=('Arial', 6), width=2, bg='#121212', fg='white', command=shown)
+
+window.after(0, ping_Server) # Start function at the beginning of the program.
+window.after(0, ping_Internet) # Start function at the beginning of the program.
 
 window.bind("<Button-1>", start_drag) # Bind to make the window movable
 window.bind("<B1-Motion>", on_drag) # Bind to make the window movable
 
 # Label Position
 # Row 2
-window.rowconfigure(2, weight=1)
 igtf_btn.grid(row=2, column=0)
 
 calculator_btn.grid(row=2, column=1 ,sticky='w')
@@ -448,15 +451,16 @@ parallel_price_btn.grid(row=2, column=3, sticky='w')
 
 
 # Row 0, 1
-close_btn.grid(row=0, column=0, padx=3, pady=3)
+hide_btn.grid(row=0, column=0, pady=5, ipadx=0, ipady=0)
+close_btn.grid(row=1, column=0, padx= 5, pady=0, sticky='n')
 
-server_status.grid(row=0, column=1, padx=6, sticky='')
-server_ping.grid(row=1, column=1, padx=0, sticky='')
+server_status.grid(row=0, column=1, padx=3,  pady=1, sticky='')
+server_ping.grid(row=1, column=1, padx=0,  pady=1, sticky='n')
 
-internet_status.grid(row=0, column=2, padx=5,sticky='')
-internet_ping.grid(row=1, column=2, padx=0, sticky='')
+internet_status.grid(row=0, column=2, padx=5, pady=1, sticky='')
+internet_ping.grid(row=1, column=2, padx=0, pady=1, sticky='n')
 
-version_label.grid(row=1, column=3, padx=5, pady=1, sticky='')
+version_label.grid(row=1, column=3, padx=2, pady=1, sticky='n')
 date_label.grid(row=0, column=3, pady=1, sticky='')
 
 # Execute windows
