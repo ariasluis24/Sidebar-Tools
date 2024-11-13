@@ -11,8 +11,130 @@ import locale
 import threading
 import time
 import gc 
+import pyautogui
+import pygetwindow as gw
+
+
+# Function to activate the Word window and write text
+#TODO Find a way to start this function on a new thread and avoid freeze on the main GUI.
+def start_user_profit_EPS(window_title, text):
+    
+    width = 1366
+    height = 210
+
+    x = (width) // 2
+    y = (height) // 2
+    
+    password = '0000'
+    companies = ['NE', 'EPS2']
+
+    # Find the window with the specified title
+    windows = gw.getWindowsWithTitle(window_title)
+    if not windows:
+        print("Window not found!")
+        return
+    
+    # Activate the first window with the matching title
+    profit_window = windows[1]
+    profit_window.activate()
+
+    # Wait a moment for the window to come to focus
+    time.sleep(1)
+    
+    # Type the specified text
+    pyautogui.write(text)
+    pyautogui.keyDown('Enter')
+    pyautogui.write(password)
+    pyautogui.keyDown('Enter')
+    
+    time.sleep(10)
+    
+    pyautogui.write(companies[1])
+    pyautogui.keyDown('Enter')
+    pyautogui.keyDown('Enter')
+    pyautogui.keyDown('Enter')
+    
+    time.sleep(3)
+    pyautogui.keyDown('down')
+    pyautogui.keyDown('Enter')
+    pyautogui.keyDown('Enter')
+    time.sleep(3)
+    pyautogui.write('EO')
+    time.sleep(2)
+    pyautogui.keyDown('Enter')
+
+    # Change window size
+    time.sleep(3)
+    pyautogui.moveTo(x, y, duration=1)
+    pyautogui.click(clicks=2, button='left')
+    
+def start_user_profit_NE(window_title, text):
+        
+    width = 1366
+    height = 210
+
+    x = (width) // 2
+    y = (height) // 2
+    
+    password = '0000'
+    companies = ['NE', 'EPS2']
+    time.sleep(5)
+    # Find the window with the specified title
+    windows = gw.getWindowsWithTitle(window_title)
+    if not windows:
+        print("Window not found!")
+        return
+    
+    # Activate the first window with the matching title
+    profit_window = windows[0]
+    profit_window.activate()
+
+    # Wait a moment for the window to come to focus
+    time.sleep(2)
+    
+    # Type the specified text
+    pyautogui.write(text)
+    pyautogui.keyDown('Enter')
+    pyautogui.write(password)
+    pyautogui.keyDown('Enter')
+    
+    time.sleep(10)
+    
+    pyautogui.write(companies[0])
+    pyautogui.keyDown('Enter')
+    pyautogui.keyDown('Enter')
+    pyautogui.keyDown('Enter')
+    
+    time.sleep(5)
+    pyautogui.keyDown('down')
+    pyautogui.keyDown('Enter')
+    time.sleep(2)
+    pyautogui.keyDown('Enter')
+    time.sleep(5)
+    pyautogui.keyDown('esc')
+
+    time.sleep(3)
+    # Change window size
+    pyautogui.moveTo(x, y, duration=1)
+    pyautogui.click(clicks=2, button='left')
+    
+    pyautogui.moveTo(1300, 10, duration=1)
+    pyautogui.click(clicks=1, button='left')
+
+    # Note this drag only works when the program is open for the first time
+    pyautogui.moveTo(640, 400, duration=1)
+    pyautogui.dragTo(1360, 400, duration=1)
+
+    time.sleep(3)
+
+    start_user_profit_EPS("Profit Plus Administrativo", "Luis Arias")
+
+# Call the function with your desired window title and text
+
+# start_user_profit_EPS("Profit Plus Administrativo", "Luis Arias")
 
 locale.setlocale(locale.LC_ALL, 'es_VE')
+# TODO make a log of the condition of both internet and server with its date (Monday D/M/Y H:M:S)
 
 # Variables to use.
 igtf_calc_path = "src\\GUI.exe"
@@ -27,7 +149,7 @@ internet_ip = '8.8.8.8'  # Ip used to do ping and check internet connection.
 hide_event = threading.Event()
 ping_thread = None
 ping_thread_two = None
-
+version = 'Beta 1.7'
 
 # TODO Change the state of the button if the program is already open.
 
@@ -90,8 +212,7 @@ def delete_operation(amount, label, label2, label3, label4):
     label4.config(text='')
 
 def open_about_me():
-    messagebox.showinfo(title=None, message='Sidebar Tools 1.6\nMade by Luis Arias\n2024 ©')
-
+    messagebox.showinfo(title=None, message=f'Sidebar Tools {version}\nMade by Luis Arias\n2024 ©')
 
 # To make the scraping of the BCV Price concurrent and avoid freezes on the main thread of the GUI.
 class BCVCalculator:
@@ -111,6 +232,7 @@ class BCVCalculator:
 
     def create_widgets(self):
         # Labels, Entry, Buttons
+        # TODO Make a button to refresh the UI. Or Update the price.
         self.sub_total_entry = Entry(self.BCV_window, font=('Arial', 14), width=14, bg='yellow', justify='center')
         self.dollar_button = Button(self.BCV_window, text='$', font=('Roboto', 8, 'bold'), width=2, height=1)
         self.calculate_button = Button(self.BCV_window, text='Calculate', command=self.calculation_BCV_Parallel, width=10)
@@ -224,14 +346,14 @@ close_btn = Button(window, text='Close', font=('Arial', 7), bg='#121212', fg='wh
 igtf_btn = Button(window, image=IGTF_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command= lambda: open_Tool(igtf_calc_path))
 calculator_btn = Button(window, image=calculator_icon, font=('Arial', 8), width=25, height=27, justify='center', bg='#121212', command= lambda: open_Tool(calculator_path))
 web_browser_btn = Button(window, image=web_browser_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command= lambda: open_Tool(web_browser_path))
-profit_btn = Button(window, image=profit_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command= lambda: (open_Tool(profit_path), open_Tool(profit_path)))
+profit_btn = Button(window, image=profit_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command= lambda: (open_Tool(profit_path), open_Tool(profit_path), start_user_profit_NE("Profit Plus Administrativo", "Luis Arias")))
 scanner_btn = Button(window, image=scanner_icon, font=('Arial', 8), width=25, height=27, justify='center', bg='#121212', command= lambda: open_Tool(scanner_path))
 explorer_btn = Button(window, image=explorer_icon, font=('Arial', 8), width=25, height=27, justify='center', bg='#121212', fg='white', command= lambda: open_Tool(explorer_exe_path))
 bcv_parallel_calc_btn = Button(window, image=bcv_icon, font=('Arial', 8), width=30, height=27, justify='center', command=lambda: BCVCalculator(window, executor))
 parallel_price_btn = Button(window, image=parallel_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command=open_Pararel_Price_Window)
 
 date_label = Label(window, text=date_actual, font=('Arial', 8,'bold'), bg='#121212', fg='white')
-version_label = Button(window, text='Version: Beta 1.6', font=('Arial', 7), width=12, bg='#121212', fg='white', relief=FLAT, justify='center', command=open_about_me )
+version_label = Button(window, text=f'Version: {version}', font=('Arial', 7), width=12, bg='#121212', fg='white', relief=FLAT, justify='center', command=open_about_me )
 
 
 server_status = Label(window, text='', font=('Arial', 7), width=15, height=1, bg='green', fg='white')
@@ -302,7 +424,7 @@ def ping_Internet():
                 if isinstance(response_Internet, float) and internet_status.cget('text') in ['', 'Host Unknown', 'Check Internet', 'Timed Out', 'Check Ethernet']:
                     internet_status.config(text='Internet Connected', fg='white', bg='green')
                     update_status(internet_ping, f'Ping: {rounded_response} ms')
-                    profit_btn.config(state='normal')
+                    
                 
                 # Condition when the IP Address keeps responding to ping
                 elif isinstance(response_Internet, float) and internet_status.cget('text') == 'Internet Connected':
@@ -312,13 +434,13 @@ def ping_Internet():
                 elif response_Internet is False:
                     internet_status.config(text='Host Unknown', fg='white', bg='red')
                     update_status(internet_ping, '-')
-                    profit_btn.config(state='disabled')  
+                      
 
                 # Condition when the IP Address doesnt respond (Timed Out)
                 elif response_Internet is None:
                     internet_status.config(text='Timed Out', fg='white', bg='red')
                     update_status(internet_ping, '-')
-                    profit_btn.config(state='disabled')
+                    
                 
                 time.sleep(1)
                 
