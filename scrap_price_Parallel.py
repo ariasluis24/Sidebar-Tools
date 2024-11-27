@@ -2,6 +2,9 @@
 # file = 'src\\config.ini'
 # now = datetime.datetime.now()
 
+# TODO: Make a scrap price getting it from the image. To avoid errors
+# TODO: When finished the scrap, on both ways, compared and used the higher value.
+ 
 def scraping_Parallel():
     
     # Scrap part

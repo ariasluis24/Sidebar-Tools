@@ -15,9 +15,8 @@ import pyautogui
 import pygetwindow as gw
 
 
-# Function to activate the Word window and write text
-#TODO Find a way to start this function on a new thread and avoid freeze on the main GUI.
-def start_user_profit_EPS(window_title, text):
+# * Functions to automate most of the process of the programs open.
+def start_User_Profit_EPS(window_title, text):
     
     width = 1366
     height = 210
@@ -28,10 +27,14 @@ def start_user_profit_EPS(window_title, text):
     password = '0000'
     companies = ['NE', 'EPS2']
 
+    pyautogui.FAILSAFE = True
+
+
     # Find the window with the specified title
     windows = gw.getWindowsWithTitle(window_title)
     if not windows:
         print("Window not found!")
+        # TODO: Make apear a error window saying that the second Profit was no opened. Then open a new Profit window and use the script on the new window.
         return
     
     # Activate the first window with the matching title
@@ -39,36 +42,44 @@ def start_user_profit_EPS(window_title, text):
     profit_window.activate()
 
     # Wait a moment for the window to come to focus
-    time.sleep(1)
+    time.sleep(3)
     
     # Type the specified text
-    pyautogui.write(text)
-    pyautogui.keyDown('Enter')
-    pyautogui.write(password)
-    pyautogui.keyDown('Enter')
+    pyautogui.PAUSE = 0.4
+    pyautogui.write(text, 0.1)
+    pyautogui.press('Enter')
+    pyautogui.write(password, 0.1)
+    pyautogui.press('Enter')
     
-    time.sleep(10)
+    time.sleep(8)
     
-    pyautogui.write(companies[1])
-    pyautogui.keyDown('Enter')
-    pyautogui.keyDown('Enter')
-    pyautogui.keyDown('Enter')
+    pyautogui.PAUSE = 1.5
+    pyautogui.write(companies[1], 0.1)
     
-    time.sleep(3)
-    pyautogui.keyDown('down')
-    pyautogui.keyDown('Enter')
-    pyautogui.keyDown('Enter')
-    time.sleep(3)
-    pyautogui.write('EO')
-    time.sleep(2)
-    pyautogui.keyDown('Enter')
+    pyautogui.PAUSE = 0.7
+    pyautogui.press('Enter')
+    pyautogui.press('Enter')
+    pyautogui.press('Enter')
+    
+
+    pyautogui.PAUSE = 1.3
+    pyautogui.press('down')
+    pyautogui.press('Enter')
+    pyautogui.press('Enter')
+
+    pyautogui.write('EOL', 0.1)
+
+    pyautogui.press('Enter')
 
     # Change window size
-    time.sleep(3)
-    pyautogui.moveTo(x, y, duration=1)
+    time.sleep(4)
+
+    pyautogui.moveTo(x, y)
     pyautogui.click(clicks=2, button='left')
-    
-def start_user_profit_NE(window_title, text):
+
+    stop_auto_thread_event.set()
+
+def start_User_Profit_NE(window_title, text):
         
     width = 1366
     height = 210
@@ -78,60 +89,202 @@ def start_user_profit_NE(window_title, text):
     
     password = '0000'
     companies = ['NE', 'EPS2']
-    time.sleep(5)
+
+    def auto_NE():
+        
+        pyautogui.FAILSAFE = True
+
+        # Find the window with the specified title
+        
+        windows = gw.getWindowsWithTitle(window_title)
+        
+        if not windows:
+            print("Window not found!")
+            return
+        
+        # Activate the first window with the matching title
+        profit_window = windows[0]
+        profit_window.activate()
+
+        # Wait a moment for the window to come to focus
+        time.sleep(3)
+        
+        # Type the specified text
+        pyautogui.PAUSE = 0.4
+        pyautogui.write(text, 0.1)
+        pyautogui.press('Enter')
+        pyautogui.write(password, 0.1)
+        pyautogui.press('Enter')
+        
+        time.sleep(8)
+        
+        pyautogui.PAUSE = 1.5
+        pyautogui.write(companies[0], 0.1)
+
+        pyautogui.PAUSE = 0.7
+        pyautogui.press('Enter')
+        pyautogui.press('Enter')
+        pyautogui.press('Enter')
+        
+
+        pyautogui.PAUSE = 1.3
+        pyautogui.press('down')
+        pyautogui.press('Enter')
+        pyautogui.PAUSE = 1.5
+        pyautogui.press('Enter')
+        
+        pyautogui.PAUSE = 0.1
+        pyautogui.press('esc')
+
+        
+        pyautogui.PAUSE = 1.3
+        # Change window size
+        time.sleep(3)
+        pyautogui.moveTo(x, y)
+        pyautogui.click(clicks=2, button='left')
+        
+        pyautogui.moveTo(1300, 10)
+        pyautogui.click(clicks=1, button='left')
+
+        # Note this drag only works when the program is open for the first time
+        pyautogui.moveTo(640, 400)
+        pyautogui.dragTo(1360, 400)
+
+
+        time.sleep(2)
+
+        start_User_Profit_EPS("Profit Plus Administrativo", "Luis Arias")
+
+
+    auto_thread = threading.Thread(target=auto_NE, daemon=True)
+    auto_thread.start()
+    # Call the function with your desired window title and text
+
+    # start_user_profit_EPS("Profit Plus Administrativo", "Luis Arias")
+
+def start_Scan_Bill():
+        
+    def auto_epson_scan():
+        
+        time.sleep(5)
+        
+        pyautogui.FAILSAFE = True
+        
+        windows = gw.getWindowsWithTitle('Epson Scan 2')
+        if not windows:
+            print("Window not found!")
+            messagebox.showinfo(title=None, message=f'Epson Scan 2, no esta abierto!')
+            
+        # Activate the first window with the matching title
+        profit_window = windows[0]
+        profit_window.activate()
+
+        #############################
+        pyautogui.PAUSE = 0
+        repeat_Tab(17)
+        pyautogui.press('enter')
+        
+        time.sleep(20)
+        repeat_Tab(6)
+        pyautogui.press('enter')
+
+        stop_auto_thread_event.set()
+
+    auto_Scan = threading.Thread(target=auto_epson_scan, daemon=True)
+    auto_Scan.start()
+
+def start_Print_Report():
+    # TODO: Use the function to find similar objects with pyautogui to find the error window when there is no info to be printed.
+    # or
+    # TODO: Use checkmarks to decide which report is going to be printed.
+    
     # Find the window with the specified title
-    windows = gw.getWindowsWithTitle(window_title)
+    windows = gw.getWindowsWithTitle('Profit Plus Administrativo')
     if not windows:
         print("Window not found!")
-        return
-    
+        
+    pyautogui.FAILSAFE = True
     # Activate the first window with the matching title
     profit_window = windows[0]
     profit_window.activate()
 
     # Wait a moment for the window to come to focus
     time.sleep(2)
-    
-    # Type the specified text
-    pyautogui.write(text)
-    pyautogui.keyDown('Enter')
-    pyautogui.write(password)
-    pyautogui.keyDown('Enter')
-    
-    time.sleep(10)
-    
-    pyautogui.write(companies[0])
-    pyautogui.keyDown('Enter')
-    pyautogui.keyDown('Enter')
-    pyautogui.keyDown('Enter')
-    
-    time.sleep(5)
-    pyautogui.keyDown('down')
-    pyautogui.keyDown('Enter')
+    pyautogui.PAUSE = 0.7
+
+    pyautogui.press('alt')
+    pyautogui.press('r')
+
+
+    pyautogui.PAUSE = 1
+    pyautogui.press('b')
+
     time.sleep(2)
-    pyautogui.keyDown('Enter')
-    time.sleep(5)
-    pyautogui.keyDown('esc')
+    ###########################################
+    # EPS2
 
-    time.sleep(3)
-    # Change window size
-    pyautogui.moveTo(x, y, duration=1)
-    pyautogui.click(clicks=2, button='left')
+    pyautogui.PAUSE = 1
+
+    pyautogui.press('num1')
+
+    pyautogui.press('tab')
+
+    pyautogui.PAUSE = 1
+
+    pyautogui.press('e')
+    pyautogui.press('e')
+    pyautogui.press('down')
+
+    pyautogui.PAUSE = 0
+
+    repeat_Tab(5)
     
-    pyautogui.moveTo(1300, 10, duration=1)
-    pyautogui.click(clicks=1, button='left')
+    pyautogui.write(date_For_Automation, interval=0.7)
 
-    # Note this drag only works when the program is open for the first time
-    pyautogui.moveTo(640, 400, duration=1)
-    pyautogui.dragTo(1360, 400, duration=1)
+    repeat_Tab(28)
 
-    time.sleep(3)
+    pyautogui.PAUSE = 1
+    pyautogui.press('i')
+    pyautogui.press('tab')    
+    
+    pyautogui.press('enter') # ! Critical step, starts the printer
+    pyautogui.PAUSE= 3
+    
+    # Here would be the function to detect the window error of there is not info to print.
+    pyautogui.press('enter') # ! If there is no info to print accepts the alert window
+    
 
-    start_user_profit_EPS("Profit Plus Administrativo", "Luis Arias")
+    ##########################################
+    # NE
+    pyautogui.PAUSE = 0
+    repeat_Tab(5)
 
-# Call the function with your desired window title and text
+    pyautogui.PAUSE = 1
 
-# start_user_profit_EPS("Profit Plus Administrativo", "Luis Arias")
+    pyautogui.press('num2')
+    
+    pyautogui.press('tab')
+    pyautogui.press('n')
+
+    pyautogui.PAUSE = 0
+
+    repeat_Tab(5)
+
+    pyautogui.write(date_For_Automation, interval=0.5)
+
+    repeat_Tab(28)
+
+    pyautogui.PAUSE = 1
+
+    pyautogui.press('i')
+    pyautogui.press('tab')
+    pyautogui.press('enter') # ! Critical step, starts the printer
+    pyautogui.press('esc')
+
+def repeat_Tab(times):
+
+    for x in range(times):
+        pyautogui.press('tab')
 
 locale.setlocale(locale.LC_ALL, 'es_VE')
 # TODO make a log of the condition of both internet and server with its date (Monday D/M/Y H:M:S)
@@ -147,9 +300,11 @@ profit_path = 'P:\\Profit_a\\profit_a.exe'
 local_server_ip = 'server'  # Local server IP or domain.
 internet_ip = '8.8.8.8'  # Ip used to do ping and check internet connection.
 hide_event = threading.Event()
+stop_auto_thread_event = threading.Event()
+stop_auto_scan_thread_event = threading.Event()
 ping_thread = None
 ping_thread_two = None
-version = 'Beta 1.7'
+version = 'Beta 1.8'
 
 # TODO Change the state of the button if the program is already open.
 
@@ -159,6 +314,7 @@ def open_Tool(tool_path):
 def open_Pararel_Price_Window():
 
     # TODO Displayed Internet Error if the Internet connection failed when it tried the scrap.
+    # TODO: Add this function to a new thread to avoid freeze on the main UI
     price_window = Toplevel(window)
     price_window.title('Parallel Price')
     price_window.geometry('180x415+850+70')
@@ -222,7 +378,7 @@ class BCVCalculator:
 
         self.BCV_window = Toplevel(master)
         self.BCV_window.title('BCV Price')
-        self.BCV_window.geometry('420x200+650+70')
+        self.BCV_window.geometry('420x150+650+270')
         self.BCV_window.iconbitmap('icon.ico')
         self.BCV_window.columnconfigure(1, weight=1)
 
@@ -232,19 +388,22 @@ class BCVCalculator:
 
     def create_widgets(self):
         # Labels, Entry, Buttons
-        # TODO Make a button to refresh the UI. Or Update the price.
         self.sub_total_entry = Entry(self.BCV_window, font=('Arial', 14), width=14, bg='yellow', justify='center')
-        self.dollar_button = Button(self.BCV_window, text='$', font=('Roboto', 8, 'bold'), width=2, height=1)
+        self.dollar_button = Button(self.BCV_window, text='$', font=('Roboto', 8, 'bold'), width=2, height=1) #TODO: Make this button able to convert the introduced values and the results.
         self.calculate_button = Button(self.BCV_window, text='Calculate', command=self.calculation_BCV_Parallel, width=10)
         self.delete_button = Button(self.BCV_window, text='Delete', command=self.delete_operation, width=8)
+        self.refresh_button = Button(self.BCV_window, text='Refresh', command=self.refresh, width=6)
 
-        self.bcv_price = Label(self.BCV_window, text=f'BCV: Loading...', font=('Arial', 10), justify='center', height=4)
-        self.parallel_price = Label(self.BCV_window, text=f'$ Parallel: Loading...', font=('Arial', 10), justify='center', height=4)
+        self.bcv_price_label = Label(self.BCV_window, text=f'BCV: Loading...', font=('Arial', 10), justify='center')
+        self.parallel_price_label = Label(self.BCV_window, text=f'$ Parallel: Loading...', font=('Arial', 10), justify='center')
+        
+        self.bcv_price = Text(self.BCV_window, height=1, width=14, borderwidth=0, highlightthickness=0, bg='#f1f1f0')
+        self.parallel_price = Text(self.BCV_window, height=1, width=16, borderwidth=0, highlightthickness=0, bg='#f1f1f0')
 
-        self.result_operation_BCV = Label(self.BCV_window, text=f'Price BCV:', font=('Arial', 10), justify='right')
-        self.result_operation_Parallel = Label(self.BCV_window, text=f'Price Parallel:', font=('Arial', 10), justify='right')
-        self.differences_between_label = Label(self.BCV_window, font=('Arial', 10), justify='center')
-        self.differences_percentage_label = Label(self.BCV_window, font=('Arial', 10), justify='right')
+        self.result_operation_BCV_Text = Text(self.BCV_window, height=1, width=30, borderwidth=0, highlightthickness=0, bg='#f1f1f0')
+        self.result_operation_Parallel_Text = Text(self.BCV_window, height=1, width=30, borderwidth=0, highlightthickness=0, bg='#f1f1f0')
+        self.differences_between_Text = Text(self.BCV_window, height=1, width=30, borderwidth=0, highlightthickness=0, bg='#f1f1f0')
+        self.differences_percentage_Text = Text(self.BCV_window, height=1, width=30, borderwidth=0, highlightthickness=0, bg='#f1f1f0')
 
         # Position
         # Column 0
@@ -252,16 +411,22 @@ class BCVCalculator:
         self.dollar_button.grid(row=1, column=0, pady=8, padx=7, sticky='ne')
         self.delete_button.grid(row=2, column=0, padx=5, sticky='es')
         self.calculate_button.grid(row=2, column=0, padx=5, sticky='ws')
-        self.bcv_price.grid(row=3, column=0, sticky='NS')
-        self.parallel_price.grid(row=4, column=0, sticky='NS')
+        self.bcv_price_label.grid(row=3, column=0)
+        self.parallel_price_label.grid(row=4, column=0)
 
         # Column 1
-        self.result_operation_BCV.grid(row=1, column=1)
-        self.result_operation_Parallel.grid(row=2, column=1)
-        self.differences_between_label.grid(row=3, column=1, pady=15)
-        self.differences_percentage_label.grid(row=4, column=1)
+        self.result_operation_BCV_Text.grid(row=1, column=1)
+        self.result_operation_Parallel_Text.grid(row=2, column=1)
+        
+        self.BCV_window.rowconfigure(3, minsize=50)
+        self.differences_between_Text.grid(row=3, column=1)
+        self.differences_percentage_Text.grid(row=4, column=1)
+
+        self.refresh_button.grid(row=4, column=1, padx=3, sticky='e')
+        self.refresh_button.lift()
 
     def shown_scraping(self):
+        
         future_BCV = self.executor.submit(scraping_BCV)
         future_Parallel = self.executor.submit(scraping_Parallel_Calculator)
 
@@ -269,47 +434,166 @@ class BCVCalculator:
         future_Parallel.add_done_callback(lambda future: self.handle_scraping_result_Parallel(future))
 
     def handle_scraping_result_BCV(self, future):
+        
         result_BCV = future.result()
-        self.result_BCV_future = float(result_BCV)
-        self.bcv_price.config(text=f'BCV: {result_BCV} Bs')
+        self.result_BCV_future = float(result_BCV)     
+        
+        self.bcv_price_label.grid_forget()
+        
+        # Create a Text widget
+        
+        self.bcv_price.insert("1.0", "BCV: ", 'initial')  # Insert the static text
+        self.bcv_price.insert("2.0", f"{self.result_BCV_future:n} Bs", "bold")  # Insert the result with a tag
+
+        self.bcv_price.tag_configure('initial', font=('Arial', 10), justify='center')
+        self.bcv_price.tag_configure("bold", font=("Arial", 10, "bold"), justify='center')  # Configure the bold tag
+        self.bcv_price.configure(state="disabled")
+        
+        self.bcv_price.grid(row=3, column=0)    
 
     def handle_scraping_result_Parallel(self, future):
+        
         result_Parallel = future.result()
         self.result_Parallel_future = float(result_Parallel)
-        self.parallel_price.config(text=f'Parallel: {result_Parallel} Bs')
+
+        self.parallel_price_label.grid_forget()
+
+        # Create a Text widget
+        
+        self.parallel_price.insert("1.0", "$ Parallel: ", 'initial_parallel')  # Insert the static text
+        self.parallel_price.insert("end", f"{self.result_Parallel_future:n} Bs", "bold_parallel")  # Insert the result with a tag
+        self.parallel_price.tag_configure('initial_parallel', font=('Arial', 10), justify='center')
+        self.parallel_price.tag_configure("bold_parallel", font=("Arial", 10, "bold"), justify='center')  # Configure the bold tag
+        self.parallel_price.configure(state="disabled")
+
+        self.parallel_price.grid(row=4, column=0)    
 
     def calculation_BCV_Parallel(self):
+        
         amount = self.sub_total_entry.get()
+
+        def add_Result_Text(Text_widget:Text, result_Description:str, result_operation):
+
+            Text_widget.configure(state='normal')    
+            Text_widget.delete('1.0', END)
+            Text_widget.insert('1.0', f'{result_Description} ', 'initial')
+            
+            if Text_widget == self.differences_percentage_Text:
+
+                Text_widget.insert('2.0', f'{result_operation:n} %', 'last')
+            
+            else:
+                Text_widget.insert('2.0', f'{result_operation:n} Bs', 'last')
+
+            Text_widget.tag_configure('initial', font=('Arial', 10), justify='center')
+            Text_widget.tag_configure('last', font=('Arial', 10, 'bold'),justify='center')
+
+            Text_widget.configure(state='disabled')
+        
+        def add_Error_Text(Text_widget_one:Text, Text_widget_two:Text):
+            
+            Text_widget_one.configure(state='normal')    
+            Text_widget_two.configure(state='normal')    
+            Text_widget_one.delete('1.0', END)
+            Text_widget_two.delete('1.0', END)
+
+            Text_widget_one.insert('1.0', 'Price BCV: Error en Valor Introducido', 'initial')
+            Text_widget_two.insert('1.0', 'Price Parallel: Error en Valor Introducido', 'initial')
+
+
+            Text_widget_one.tag_configure('initial', font=('Arial', 8, 'bold'), justify='center')
+            Text_widget_two.tag_configure('initial', font=('Arial', 8, 'bold'), justify='center')
+
+            Text_widget_one.configure(state='disabled')
+            Text_widget_two.configure(state='disabled')
+
         try:
             amount_float = float(amount)
             result_calculation_BCV = round(Decimal(amount_float * self.result_BCV_future), 2)
             result_calculation_Parallel = round(Decimal(amount_float * float(self.result_Parallel_future)), 2)
             difference_between_prices = round(Decimal(result_calculation_Parallel - result_calculation_BCV), 2)
-
             difference_percentage = round(Decimal(((result_calculation_Parallel - result_calculation_BCV) / result_calculation_BCV) * 100), 2)
 
-            self.result_operation_BCV.config(text=f'Price BCV: {result_calculation_BCV:n} Bs')
-            self.result_operation_Parallel.config(text=f'Price Parallel: {result_calculation_Parallel:n} Bs')
-
-            self.differences_between_label.config(text=f'Gap: {difference_between_prices:n} Bs')
-            self.differences_percentage_label.config(text=f'Difference %: {difference_percentage:n}%')
-
+            add_Result_Text(self.result_operation_BCV_Text, 'Price BCV:', result_calculation_BCV)
+            add_Result_Text(self.result_operation_Parallel_Text, 'Price Parallel:', result_calculation_Parallel)
+            add_Result_Text(self.differences_between_Text, 'Gap:', difference_between_prices)
+            # FIXME: This is showing the correct difference percentage but a the end is saying 'Bs' instead of '%'
+            add_Result_Text(self.differences_percentage_Text, 'Difference:', difference_percentage)
+            
         except ValueError:
-            self.result_operation_BCV.config(text=f'Price BCV: Error en Valor Introducido')
-            self.result_operation_Parallel.config(text=f'Price Parallel: Error en Valor Introducido')
+
+            add_Error_Text(self.result_operation_BCV_Text, self.result_operation_Parallel_Text)
+
+        except AttributeError:
+
+            messagebox.showinfo(title=None, message=f'Precios aun no actualizados!')
 
     def delete_operation(self):
+
         self.sub_total_entry.delete(0, 'end')
-        self.result_operation_BCV.config(text=f'Price BCV:')
-        self.result_operation_Parallel.config(text=f'Price Parallel:')
-        self.differences_between_label.config(text='')
-        self.differences_percentage_label.config(text='')
+        # Change the state of the Text widget to accept changes.
+        self.result_operation_BCV_Text.configure(state='normal')
+        self.result_operation_Parallel_Text.configure(state='normal')
+        self.differences_between_Text.configure(state='normal')
+        self.differences_percentage_Text.configure(state='normal')
+        
+        self.result_operation_BCV_Text.delete('1.0', END)
+        self.result_operation_Parallel_Text.delete('1.0', END)
+        self.differences_between_Text.delete('1.0', END)
+        self.differences_percentage_Text.delete('1.0', END)
 
     def on_closing_toplevel(self):
+       
         self.BCV_window.destroy()
         gc.collect()
 
-executor = ThreadPoolExecutor(max_workers=2)
+    def refresh(self):
+        
+        self.delete_operation()
+        self.bcv_price.grid_forget()
+        self.bcv_price_label.grid(row=3, column=0)
+        
+        self.parallel_price.grid_forget()
+        self.parallel_price_label.grid(row=4, column=0)
+        self.shown_scraping()
+
+class AutoWindow:
+
+    # TODO: Investigate what other task can be automated.
+    def __init__(self, master, executor):
+        
+        self.master = master
+        self.executor = executor
+
+        self.Auto_window = Toplevel(master)
+        self.Auto_window.title('Autowork')
+        self.Auto_window.geometry('200x200+650+70')
+        self.Auto_window.iconbitmap('icon.ico')
+        self.Auto_window.columnconfigure(1, weight=1)
+
+        self.create_widgets()
+        self.Auto_window.protocol("WM_DELETE_WINDOW", self.on_closing_toplevel)
+
+    def create_widgets(self):
+        
+        self.print_reports_btn = Button(self.Auto_window, text='Print Reports', font=('Roboto', 8, 'bold'), width=10, height=1, command=start_Print_Report)
+        self.print_NE = Button(self.Auto_window, text='Print NE', font=('Roboto', 8, 'bold'), width=10, height=1)
+
+        # Position
+        self.Auto_window.rowconfigure(0, minsize=20)
+        self.Auto_window.columnconfigure(0, minsize=5)
+        self.Auto_window.rowconfigure(1, minsize=50)
+        self.Auto_window.columnconfigure(1, minsize=50)
+        
+        self.print_reports_btn.grid(row=0, column=0, padx=2, pady=2)
+        self.print_NE.grid(row=1, column=0, padx=2, pady=2)
+
+    def on_closing_toplevel(self):
+        
+        self.Auto_window.destroy()
+        gc.collect()
+   
+executor = ThreadPoolExecutor(max_workers=4)
 
 # Windows entity  
 
@@ -335,10 +619,11 @@ scanner_icon = PhotoImage(file='src\\scanner30.png')
 explorer_icon = PhotoImage(file='src\\file_explorer30.png')
 bcv_icon = PhotoImage(file='src\\BCV30.png')
 parallel_icon = PhotoImage(file='src\\parallel30.png')
+script_icon = PhotoImage(file='src\\script30.png')
 
 now = datetime.datetime.now()
 date_actual = now.strftime('%a %d/%b/%y')
-
+date_For_Automation = now.strftime('%d%m20%y')
 # Creating Labels
 
 close_btn = Button(window, text='Close', font=('Arial', 7), bg='#121212', fg='white', command=window.destroy)
@@ -346,14 +631,16 @@ close_btn = Button(window, text='Close', font=('Arial', 7), bg='#121212', fg='wh
 igtf_btn = Button(window, image=IGTF_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command= lambda: open_Tool(igtf_calc_path))
 calculator_btn = Button(window, image=calculator_icon, font=('Arial', 8), width=25, height=27, justify='center', bg='#121212', command= lambda: open_Tool(calculator_path))
 web_browser_btn = Button(window, image=web_browser_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command= lambda: open_Tool(web_browser_path))
-profit_btn = Button(window, image=profit_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command= lambda: (open_Tool(profit_path), open_Tool(profit_path), start_user_profit_NE("Profit Plus Administrativo", "Luis Arias")))
-scanner_btn = Button(window, image=scanner_icon, font=('Arial', 8), width=25, height=27, justify='center', bg='#121212', command= lambda: open_Tool(scanner_path))
+profit_btn = Button(window, image=profit_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command= lambda: (open_Tool(profit_path), open_Tool(profit_path), start_User_Profit_NE("Profit Plus Administrativo", "Luis Arias")))
+scanner_btn = Button(window, image=scanner_icon, font=('Arial', 8), width=25, height=27, justify='center', bg='#121212', command= lambda: (open_Tool(scanner_path), start_Scan_Bill()))
 explorer_btn = Button(window, image=explorer_icon, font=('Arial', 8), width=25, height=27, justify='center', bg='#121212', fg='white', command= lambda: open_Tool(explorer_exe_path))
 bcv_parallel_calc_btn = Button(window, image=bcv_icon, font=('Arial', 8), width=30, height=27, justify='center', command=lambda: BCVCalculator(window, executor))
 parallel_price_btn = Button(window, image=parallel_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command=open_Pararel_Price_Window)
+script_btn = Button(window, image=script_icon, font=('Arial', 8), width=30, height=27, justify='center', fg='white', bg='#121212', command=lambda: AutoWindow(window, executor))
+
 
 date_label = Label(window, text=date_actual, font=('Arial', 8,'bold'), bg='#121212', fg='white')
-version_label = Button(window, text=f'Version: {version}', font=('Arial', 7), width=12, bg='#121212', fg='white', relief=FLAT, justify='center', command=open_about_me )
+version_label = Button(window, text=f'Version: {version}', font=('Arial', 7), width=12, bg='#121212', fg='white', relief=FLAT, justify='center', command=open_about_me)
 
 
 server_status = Label(window, text='', font=('Arial', 7), width=15, height=1, bg='green', fg='white')
@@ -478,7 +765,7 @@ def hide():
     hide_event.set()
 
     # Change the size of the window
-    window.geometry('340x40+600+685')
+    window.geometry('375x40+600+685')
 
     # Unmap all the buttons of the first 2 rows
     hide_btn.grid_forget()
@@ -493,20 +780,21 @@ def hide():
     version_label.grid_forget()
 
     # Change the position of the tools buttons to be displayed on a new windows size
-    shown_btn.grid(row=0, column=0, pady=5, sticky='n')
+    shown_btn.grid(row=0, column=0, pady=4, sticky='n')
     close_btn.grid(row=0, column=0, padx=2, pady=0, sticky='s')
 
     igtf_btn.grid(row=0, column=1)
 
     calculator_btn.grid(row=0, column=2, padx=2, pady=5, sticky='w')
-    web_browser_btn.grid(row=0, column=3, padx=2, pady=5)
-    profit_btn.grid(row=0, column=4, padx=2, pady=5, sticky='e')
+    web_browser_btn.grid(row=0, column=3, padx=2, pady=5, sticky='w')
+    profit_btn.grid(row=0, column=4, padx=2, pady=5, sticky='w')
 
     scanner_btn.grid(row=0, column=5, padx=2, pady=5, sticky='w')
-    explorer_btn.grid(row=0, column=6, padx=2, pady=5, sticky='')
-    bcv_parallel_calc_btn.grid(row=0, column=7, padx=2, pady=5, sticky='e')
+    explorer_btn.grid(row=0, column=6, padx=2, pady=5, sticky='w')
+    bcv_parallel_calc_btn.grid(row=0, column=7, padx=2, pady=5, sticky='w')
 
     parallel_price_btn.grid(row=0, column=8, padx=2, pady=5, sticky='w')
+    script_btn.grid(row=0, column=9, padx=0, sticky='w')
 
 def shown():
     # Start both functions creating 2 new threads.
@@ -517,16 +805,37 @@ def shown():
     window.geometry('340x90+600+635')
     
     # Unmap button.
+    hide_btn.grid_forget()
+
+    server_status.grid_forget()
+    server_ping.grid_forget()
+
+    internet_status.grid_forget()
+    internet_ping.grid_forget()
+
+    date_label.grid_forget()
+    version_label.grid_forget()
     shown_btn.grid_forget()
+
+    igtf_btn.grid_forget()
+
+    calculator_btn.grid_forget()
+    web_browser_btn.grid_forget()
+    profit_btn.grid_forget()
+
+    scanner_btn.grid_forget()
+    explorer_btn.grid_forget()
+    bcv_parallel_calc_btn.grid_forget()
+
+    parallel_price_btn.grid_forget()
+    script_btn.grid_forget()
     
-    # Map button again to its initial values.
-
-    hide_btn.grid(row=0, column=0, pady=5, ipadx=0, ipady=0)
-
+    # Label Position
+    # Row 2
     igtf_btn.grid(row=2, column=0)
 
     calculator_btn.grid(row=2, column=1 ,sticky='w')
-    web_browser_btn.grid(row=2, column=1)
+    web_browser_btn.grid(row=2, column=1, padx=5)
     profit_btn.grid(row=2, column=1, sticky='e')
 
     scanner_btn.grid(row=2, column=2, sticky='w')
@@ -534,9 +843,11 @@ def shown():
     bcv_parallel_calc_btn.grid(row=2, column=2, sticky='e')
 
     parallel_price_btn.grid(row=2, column=3, sticky='w')
+    script_btn.grid(row=2, column=3, padx=37, sticky='w')
 
 
     # Row 0, 1
+    hide_btn.grid(row=0, column=0, pady=0, ipadx=0, ipady=0)
     close_btn.grid(row=1, column=0, padx= 5, pady=0, sticky='n')
 
     server_status.grid(row=0, column=1, padx=3,  pady=1, sticky='')
@@ -545,8 +856,8 @@ def shown():
     internet_status.grid(row=0, column=2, padx=5, pady=1, sticky='')
     internet_ping.grid(row=1, column=2, padx=0, pady=1, sticky='n')
 
-    version_label.grid(row=1, column=3, padx=2, pady=1, sticky='n')
-    date_label.grid(row=0, column=3, pady=1, sticky='')
+    version_label.grid(row=1, column=3, padx=2, pady=1, sticky='wn')
+    date_label.grid(row=0, column=3, pady=1, sticky='w')
 
 hide_btn = Button(window, text='▼', font=('Arial', 6), width=2, bg='#121212', fg='white', command=hide)
 shown_btn = Button(window, text='▲', font=('Arial', 6), width=2, bg='#121212', fg='white', command=shown)
@@ -565,11 +876,13 @@ calculator_btn.grid(row=2, column=1 ,sticky='w')
 web_browser_btn.grid(row=2, column=1)
 profit_btn.grid(row=2, column=1, sticky='e')
 
-scanner_btn.grid(row=2, column=2, sticky='w')
+
+scanner_btn.grid(row=2, column=2, padx=3, sticky='w')
 explorer_btn.grid(row=2, column=2, padx=3, sticky='')
 bcv_parallel_calc_btn.grid(row=2, column=2, sticky='e')
 
 parallel_price_btn.grid(row=2, column=3, sticky='w')
+script_btn.grid(row=2, column=3, padx=37, sticky='w')
 
 
 # Row 0, 1
@@ -582,8 +895,8 @@ server_ping.grid(row=1, column=1, padx=0,  pady=1, sticky='n')
 internet_status.grid(row=0, column=2, padx=5, pady=1, sticky='')
 internet_ping.grid(row=1, column=2, padx=0, pady=1, sticky='n')
 
-version_label.grid(row=1, column=3, padx=2, pady=1, sticky='n')
-date_label.grid(row=0, column=3, pady=1, sticky='')
+version_label.grid(row=1, column=3, padx=2, pady=1, sticky='wn')
+date_label.grid(row=0, column=3, pady=1, sticky='w')
 
 # Execute windows
 window.mainloop()

@@ -13,8 +13,8 @@ def scraping_BCV():
         import requests, urllib3
         urllib3.disable_warnings()
         from bs4 import BeautifulSoup
-
         page_to_scrape = requests.get('https://www.bcv.org.ve', verify=False)
+
         if page_to_scrape.status_code == 200:
             #TODO Use status code for execeptions. https://github.com/terremoth/get-dollar-value-py/blob/master/dolar-value.py
             soup = BeautifulSoup(page_to_scrape.text, 'html.parser')
