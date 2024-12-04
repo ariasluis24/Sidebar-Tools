@@ -29,17 +29,23 @@ def start_User_Profit_EPS(window_title, text):
 
     pyautogui.FAILSAFE = True
 
-
     # Find the window with the specified title
+    # Activate the first window with the matching title
     windows = gw.getWindowsWithTitle(window_title)
     if not windows:
         print("Window not found!")
-        # TODO: Make apear a error window saying that the second Profit was no opened. Then open a new Profit window and use the script on the new window.
+        # TODO: Make appear a error window saying that the second Profit was no opened. Then open a new Profit window and use the script on the new window.
         return
     
-    # Activate the first window with the matching title
-    profit_window = windows[1]
-    profit_window.activate()
+    try:
+
+        profit_window = windows[1]
+        profit_window.activate()
+
+    except IndexError:
+
+        open_Tool(profit_path)
+
 
     # Wait a moment for the window to come to focus
     time.sleep(3)
@@ -93,7 +99,7 @@ def start_User_Profit_NE(window_title, text):
     def auto_NE():
         
         pyautogui.FAILSAFE = True
-
+        time.sleep(2)
         # Find the window with the specified title
         
         windows = gw.getWindowsWithTitle(window_title)
@@ -158,9 +164,6 @@ def start_User_Profit_NE(window_title, text):
 
     auto_thread = threading.Thread(target=auto_NE, daemon=True)
     auto_thread.start()
-    # Call the function with your desired window title and text
-
-    # start_user_profit_EPS("Profit Plus Administrativo", "Luis Arias")
 
 def start_Scan_Bill():
         
@@ -184,7 +187,7 @@ def start_Scan_Bill():
         repeat_Tab(17)
         pyautogui.press('enter')
         
-        time.sleep(20)
+        time.sleep(10)
         repeat_Tab(6)
         pyautogui.press('enter')
 
@@ -194,92 +197,117 @@ def start_Scan_Bill():
     auto_Scan.start()
 
 def start_Print_Report():
-    # TODO: Use the function to find similar objects with pyautogui to find the error window when there is no info to be printed.
-    # or
-    # TODO: Use checkmarks to decide which report is going to be printed.
+    # TODO: Use check marks to decide which report is going to be printed.
     
-    # Find the window with the specified title
-    windows = gw.getWindowsWithTitle('Profit Plus Administrativo')
-    if not windows:
-        print("Window not found!")
-        
+    windows = gw.getWindowsWithTitle('Facturas de Venta - Profit Plus Administrativo ( Ventas y Cuentas x Cobrar ) Usuario: Luis Arias Empresa: COMPUGATE CENTER VALENCIA,CA Suc: NOTA DE ENTREGA')
+    windows_2 = gw.getWindowsWithTitle('Cobros a Clientes - Profit Plus Administrativo ( Ventas y Cuentas x Cobrar ) Usuario: Luis Arias Empresa: COMPUGATE CENTER VALENCIA,CA Suc: NOTA DE ENTREGA')
     pyautogui.FAILSAFE = True
-    # Activate the first window with the matching title
-    profit_window = windows[0]
-    profit_window.activate()
-
-    # Wait a moment for the window to come to focus
-    time.sleep(2)
-    pyautogui.PAUSE = 0.7
-
-    pyautogui.press('alt')
-    pyautogui.press('r')
-
-
-    pyautogui.PAUSE = 1
-    pyautogui.press('b')
-
-    time.sleep(2)
-    ###########################################
-    # EPS2
-
-    pyautogui.PAUSE = 1
-
-    pyautogui.press('num1')
-
-    pyautogui.press('tab')
-
-    pyautogui.PAUSE = 1
-
-    pyautogui.press('e')
-    pyautogui.press('e')
-    pyautogui.press('down')
-
-    pyautogui.PAUSE = 0
-
-    repeat_Tab(5)
     
-    pyautogui.write(date_For_Automation, interval=0.7)
+    def auto_Print_Report():
+        condition_Tabs = 5
+        # This condition check on what module the Profit Window and activates the one being used.
+        # Activate the first window with the matching title
+        if not windows:
+            # Facturas de Venta
+            profit_window = windows_2[0]
+            profit_window.activate()
+        
+        else:
+            # Cobros a Clientes
+            profit_window = windows[0]
+            profit_window.activate()
+            
+        # Wait a moment for the window to come to focus
+        time.sleep(2)
+        pyautogui.PAUSE = 0.7
 
-    repeat_Tab(28)
+        pyautogui.press('alt')
+        pyautogui.press('r')
 
-    pyautogui.PAUSE = 1
-    pyautogui.press('i')
-    pyautogui.press('tab')    
-    
-    pyautogui.press('enter') # ! Critical step, starts the printer
-    pyautogui.PAUSE= 3
-    
-    # Here would be the function to detect the window error of there is not info to print.
-    pyautogui.press('enter') # ! If there is no info to print accepts the alert window
-    
 
-    ##########################################
-    # NE
-    pyautogui.PAUSE = 0
-    repeat_Tab(5)
+        pyautogui.PAUSE = 1
+        pyautogui.press('b')
 
-    pyautogui.PAUSE = 1
+        time.sleep(1)
+        try:
+            # This Try and except code verify if on the print report window there is a button that changes how many times the tab needs to be pressed.
+            printers = pyautogui.locateCenterOnScreen('src/printers.png')
+            condition_Tabs = 6
+        except pyautogui.ImageNotFoundException:
+            pass
 
-    pyautogui.press('num2')
-    
-    pyautogui.press('tab')
-    pyautogui.press('n')
 
-    pyautogui.PAUSE = 0
+        time.sleep(2)
+        ###########################################
+        # EPS2
 
-    repeat_Tab(5)
+        pyautogui.PAUSE = 1
 
-    pyautogui.write(date_For_Automation, interval=0.5)
+        pyautogui.press('num1')
 
-    repeat_Tab(28)
+        pyautogui.press('tab')
 
-    pyautogui.PAUSE = 1
+        pyautogui.PAUSE = 1
 
-    pyautogui.press('i')
-    pyautogui.press('tab')
-    pyautogui.press('enter') # ! Critical step, starts the printer
-    pyautogui.press('esc')
+        pyautogui.press('e')
+        pyautogui.press('e')
+        pyautogui.press('down')
+
+        pyautogui.PAUSE = 0.01
+
+        repeat_Tab(condition_Tabs)
+        
+        pyautogui.write(date_For_Automation, interval=0.03)
+
+        repeat_Tab(28)
+
+        pyautogui.PAUSE = 0.4
+        pyautogui.press('i')
+        pyautogui.press('tab')    
+        
+        pyautogui.press('enter') # ! Critical step, starts the printer
+
+
+        # Here would be the function to detect the window error of there is not info to print.
+        time.sleep(1)
+        try:
+            no_info = pyautogui.locateCenterOnScreen('src/no_info_2.png')
+            pyautogui.moveTo((no_info[0] + 160 ), (no_info[1] + 55), 0.02)
+            pyautogui.leftClick() # ! If there is no info to print accepts the alert window
+        
+        except pyautogui.ImageNotFoundException:
+            pass
+
+        ##########################################
+        # NE
+        pyautogui.PAUSE = 0
+        repeat_Tab(5)
+
+        pyautogui.PAUSE = 1
+
+        pyautogui.press('num2')
+        
+        pyautogui.press('tab')
+        pyautogui.press('n')
+
+        pyautogui.PAUSE = 0.01
+
+        repeat_Tab(condition_Tabs)
+
+        pyautogui.write(date_For_Automation, interval=0.03)
+
+        repeat_Tab(28)
+
+        pyautogui.PAUSE = 0.4
+        pyautogui.press('i')
+        pyautogui.press('tab')
+        pyautogui.press('enter') # ! Critical step, starts the printer
+        pyautogui.press('esc')
+
+        stop_auto_print_report_thread_event.set()
+
+    auto_Print = threading.Thread(target=auto_Print_Report, daemon=True)
+    auto_Print.start()
 
 def repeat_Tab(times):
 
@@ -287,7 +315,6 @@ def repeat_Tab(times):
         pyautogui.press('tab')
 
 locale.setlocale(locale.LC_ALL, 'es_VE')
-# TODO make a log of the condition of both internet and server with its date (Monday D/M/Y H:M:S)
 
 # Variables to use.
 igtf_calc_path = "src\\GUI.exe"
@@ -298,20 +325,35 @@ calculator_path = 'C:\\Windows\\System32\\calc.exe'
 network_Test_path = "C:\\Windows\\System32\\cmd.exe"
 profit_path = 'P:\\Profit_a\\profit_a.exe'
 local_server_ip = 'server'  # Local server IP or domain.
-internet_ip = '8.8.8.8'  # Ip used to do ping and check internet connection.
+internet_ip = 'www.youtube.com'  # Ip used to do ping and check internet connection.
 hide_event = threading.Event()
 stop_auto_thread_event = threading.Event()
 stop_auto_scan_thread_event = threading.Event()
+stop_auto_print_report_thread_event = threading.Event()
 ping_thread = None
 ping_thread_two = None
-version = 'Beta 1.8'
+version = 'Beta 1.9'
+now = datetime.datetime.now()
+date_actual = now.strftime('%a %d/%b/%y')
+date_For_Automation = now.strftime('%d%m20%y')
+name_file = f'src\\logs\\log-{date_For_Automation}.txt'
+network_response = ['Server Connected', 'Internet Connected', 'Host Unknown',  'Timed Out', 'Check Internet', 'Check Ethernet']
+
+def saving_logs(server, ping, network_response):
+    update_Log_Time = datetime.datetime.now()
+    date_For_Logs = update_Log_Time.strftime('%d/%m/%Y %I:%M:%S')
+    # date_For_Logs = update_Log_Time.strftime('%T')
+    with open(name_file, 'a') as file:
+        # Write method to write file in an external txt file.
+        # Put a if statement when the ping returned is a blank space.
+        file.write(f'[{server}] Time:[{date_For_Logs}] - Ping:[{ping} - {network_response}]\n')
 
 # TODO Change the state of the button if the program is already open.
 
 def open_Tool(tool_path):
     subprocess.Popen(tool_path)
 
-def open_Pararel_Price_Window():
+def open_Parallel_Price_Window():
 
     # TODO Displayed Internet Error if the Internet connection failed when it tried the scrap.
     # TODO: Add this function to a new thread to avoid freeze on the main UI
@@ -332,7 +374,7 @@ def open_Pararel_Price_Window():
         texto_lista = result
     
     else:
-        texto_lista = 'An unexpected error occured.'
+        texto_lista = 'An unexpected error occurred.'
     
     price_title = Label(price_window, text='Parallel Price', font=('Arial', 12, 'bold'))
     
@@ -517,7 +559,6 @@ class BCVCalculator:
             add_Result_Text(self.result_operation_BCV_Text, 'Price BCV:', result_calculation_BCV)
             add_Result_Text(self.result_operation_Parallel_Text, 'Price Parallel:', result_calculation_Parallel)
             add_Result_Text(self.differences_between_Text, 'Gap:', difference_between_prices)
-            # FIXME: This is showing the correct difference percentage but a the end is saying 'Bs' instead of '%'
             add_Result_Text(self.differences_percentage_Text, 'Difference:', difference_percentage)
             
         except ValueError:
@@ -621,9 +662,6 @@ bcv_icon = PhotoImage(file='src\\BCV30.png')
 parallel_icon = PhotoImage(file='src\\parallel30.png')
 script_icon = PhotoImage(file='src\\script30.png')
 
-now = datetime.datetime.now()
-date_actual = now.strftime('%a %d/%b/%y')
-date_For_Automation = now.strftime('%d%m20%y')
 # Creating Labels
 
 close_btn = Button(window, text='Close', font=('Arial', 7), bg='#121212', fg='white', command=window.destroy)
@@ -635,7 +673,7 @@ profit_btn = Button(window, image=profit_icon, font=('Arial', 8), width=30, heig
 scanner_btn = Button(window, image=scanner_icon, font=('Arial', 8), width=25, height=27, justify='center', bg='#121212', command= lambda: (open_Tool(scanner_path), start_Scan_Bill()))
 explorer_btn = Button(window, image=explorer_icon, font=('Arial', 8), width=25, height=27, justify='center', bg='#121212', fg='white', command= lambda: open_Tool(explorer_exe_path))
 bcv_parallel_calc_btn = Button(window, image=bcv_icon, font=('Arial', 8), width=30, height=27, justify='center', command=lambda: BCVCalculator(window, executor))
-parallel_price_btn = Button(window, image=parallel_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command=open_Pararel_Price_Window)
+parallel_price_btn = Button(window, image=parallel_icon, font=('Arial', 8), width=30, height=27, justify='center', bg='#121212', command=open_Parallel_Price_Window)
 script_btn = Button(window, image=script_icon, font=('Arial', 8), width=30, height=27, justify='center', fg='white', bg='#121212', command=lambda: AutoWindow(window, executor))
 
 
@@ -660,38 +698,40 @@ def ping_Server():
 
                 # Condition when the server responds correctly for the first time or the connection comes back.
                 if isinstance(response_server, float) and server_status.cget('text') in ['', 'Host Unknown', 'Check Internet', 'Time Out', 'Check Ethernet']:
-                    server_status.config(text='Server Connected', fg='white', bg='green')
+                    server_status.config(text=network_response[0], fg='white', bg='green')
                     update_status(server_ping, f'Ping: {rounded_response} ms')
                     profit_btn.config(state='normal')
-                
+                    saving_logs('Server', rounded_response, network_response[10])
 
                 # Condition when the server keeps responding
                 elif isinstance(response_server, float) and server_status.cget('text') == 'Server Connected':
                     update_status(server_ping, f'Ping: {rounded_response} ms')
-                
+                    saving_logs('Server', rounded_response, network_response[0])
                     
-                # Condition when the server doesnt respond (Disconnection)
+                # Condition when the server doesn't respond (Disconnection)
                 elif response_server is False:
-                    server_status.config(text='Host Unknown', fg='white', bg='red')
+                    server_status.config(text=network_response[2], fg='white', bg='red')
                     update_status(server_ping, '-')
                     profit_btn.config(state='disabled')
-                
+                    saving_logs('Server', rounded_response, network_response[2])
 
-                # Condition when the server doesnt respond (Timed Out)
+                # Condition when the server doesn't respond (Timed Out)
                 elif response_server is None:
-                    server_status.config(text='Timed Out', fg='white', bg='red')
+                    server_status.config(text=network_response[3], fg='white', bg='red')
                     update_status(server_ping, '-')
                     profit_btn.config(state='disabled')
+                    saving_logs('Server', rounded_response, network_response[3])
+                
                 time.sleep(1)
 
-            except TimeoutError as e:
-                return f"Timeout Error: {e}"
+            except TimeoutError:
+                ping_and_update()
            
-            except OSError as e:
-                return f"Operating system Error: {e}"
+            except OSError:
+                ping_and_update()
 
-            except Exception as e:
-                return f"Unexpected Error: {e}"  
+            except Exception:
+                ping_and_update()
 
     if ping_thread is None or not ping_thread.is_alive():
         hide_event.clear()  # Reset the hide event
@@ -700,8 +740,9 @@ def ping_Server():
 
 def ping_Internet():
     global ping_thread_two
-    def ping_and_update():
+    def ping_and_update_Internet():
         while not hide_event.is_set():
+            
             response_Internet = ping(internet_ip, unit='ms')
             
             try:
@@ -709,40 +750,41 @@ def ping_Internet():
                 
                 # Condition when the ping to the IP Address responds correctly for the first time or the connection comes back.
                 if isinstance(response_Internet, float) and internet_status.cget('text') in ['', 'Host Unknown', 'Check Internet', 'Timed Out', 'Check Ethernet']:
-                    internet_status.config(text='Internet Connected', fg='white', bg='green')
+                    internet_status.config(text=network_response[1], fg='white', bg='green')
                     update_status(internet_ping, f'Ping: {rounded_response} ms')
-                    
+                    saving_logs('Internet', rounded_response, network_response[1])
                 
                 # Condition when the IP Address keeps responding to ping
-                elif isinstance(response_Internet, float) and internet_status.cget('text') == 'Internet Connected':
+                elif isinstance(response_Internet, float) and internet_status.cget('text') == network_response[1]:
                     update_status(internet_ping, f'Ping: {rounded_response} ms')
+                    saving_logs('Internet', rounded_response, network_response[1])
                 
-                # Condition when the IP Address doesnt respond (Disconnection)
+                # Condition when the IP Address doesn't respond (Disconnection)
                 elif response_Internet is False:
-                    internet_status.config(text='Host Unknown', fg='white', bg='red')
+                    internet_status.config(text=network_response[2], fg='white', bg='red')
                     update_status(internet_ping, '-')
-                      
+                    saving_logs('Internet', rounded_response, network_response[2])
 
-                # Condition when the IP Address doesnt respond (Timed Out)
+                # Condition when the IP Address doesn't respond (Timed Out)
                 elif response_Internet is None:
-                    internet_status.config(text='Timed Out', fg='white', bg='red')
+                    internet_status.config(text=network_response[3], fg='white', bg='red')
                     update_status(internet_ping, '-')
-                    
+                    saving_logs('Internet', rounded_response, network_response[3])
                 
                 time.sleep(1)
                 
-            except TimeoutError as e:
-                return f"Timeout Error: {e}"
+            except TimeoutError:
+                ping_and_update_Internet()
             
-            except OSError as e:
-                return f"Operating system Error: {e}"
+            except OSError:
+                ping_and_update_Internet()
             
-            except Exception as e:
-                return f"Unexpected Error: {e}" 
+            except Exception:
+                ping_and_update_Internet() 
         
     if ping_thread_two is None or not ping_thread_two.is_alive():
         hide_event.clear()  # Reset the hide event
-        ping_thread_two = threading.Thread(target=ping_and_update, daemon=True)
+        ping_thread_two = threading.Thread(target=ping_and_update_Internet, daemon=True)
         ping_thread_two.start()
 
 def update_status(label_ping, ping_text=''):
