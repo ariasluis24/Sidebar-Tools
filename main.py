@@ -1,10 +1,11 @@
 from tkinter import *
 from tkinter import messagebox
-from scrap_price_Parallel import scraping_Parallel, scraping_Parallel_Calculator
+from scrap_price_Parallel import scraping_Parallel, scraping_Parallel_Calculator, scraping_Parallel_Photo
 from scrap_price_BCV import scraping_BCV
 from ping3 import ping
 from decimal import Decimal 
 from concurrent.futures import ThreadPoolExecutor
+from PIL import ImageTk, Image
 import datetime
 import subprocess
 import locale
@@ -330,9 +331,10 @@ hide_event = threading.Event()
 stop_auto_thread_event = threading.Event()
 stop_auto_scan_thread_event = threading.Event()
 stop_auto_print_report_thread_event = threading.Event()
+stop_auto_open_parallel_window_thread_event = threading.Event()
 ping_thread = None
 ping_thread_two = None
-version = 'Beta 1.9'
+version = 'Beta 2.0'
 now = datetime.datetime.now()
 date_actual = now.strftime('%a %d/%b/%y')
 date_For_Automation = now.strftime('%d%m20%y')
@@ -355,52 +357,63 @@ def open_Tool(tool_path):
 
 def open_Parallel_Price_Window():
 
-    # TODO Displayed Internet Error if the Internet connection failed when it tried the scrap.
-    # TODO: Add this function to a new thread to avoid freeze on the main UI
-    price_window = Toplevel(window)
-    price_window.title('Parallel Price')
-    price_window.geometry('180x415+850+70')
-    price_window.iconbitmap('icon.ico')
-    
-    result = scraping_Parallel()
-    
-    if isinstance(result, list) == True:
-        texto_lista = None
-        # Unir los elementos de la lista en un solo string con saltos de línea
-        texto_lista = ''.join([f"{emoji}: {valor}\n" for emoji, valor in result if len(valor) <=15])
-    
-    elif isinstance(result, str) == True:
-        # 
-        texto_lista = result
-    
-    else:
-        texto_lista = 'An unexpected error occurred.'
-    
-    price_title = Label(price_window, text='Parallel Price', font=('Arial', 12, 'bold'))
-    
-    scrap_price_label = Label(price_window, text=texto_lista, font=('Arial', 12), borderwidth=1, relief='groove')
-   
-    price_title.grid(row=0, column=0, columnspan=1,sticky='we')
-    
-    scrap_price_label.grid(row=1, column=0, padx=8,sticky='nswe')
-
-    def on_closing_toplevel(price_window):
+    def auto_Parallel():
+        # TODO: Redo this whole window into a Class window.
+        # TODO Displayed Internet Error if the Internet connection failed when it tried the scrap.
+        # TODO: Make a refresh button.
+        price_window = Toplevel(window)
+        price_window.title('Parallel Price')
+        price_window.geometry('600x415+450+70')
+        price_window.iconbitmap('icon.ico')
         
-        # Ensure widgets are destroyed properly
-        price_title.destroy() 
-        scrap_price_label.destroy()
-
+        scraping_Parallel_Photo()
+        result = scraping_Parallel()
         
-        # Destroy the price window itself
-        price_window.destroy()
-
-        # Force garbage collection and reset global variables
-        gc.collect()
+        if isinstance(result, list) == True:
+            texto_lista = None
+            # Joins all the elements from a list, into a single string with jump spaces.
+            texto_lista = ''.join([f"{emoji}: {valor}\n" for emoji, valor in result if len(valor) <=15])
         
-        price_window = None
-        texto_lista = None
-    
-    price_window.protocol("WM_DELETE_WINDOW", lambda: on_closing_toplevel(price_window))
+        elif isinstance(result, str) == True:
+            # 
+            texto_lista = result
+        
+        else:
+            texto_lista = 'An unexpected error occurred.'
+        
+        img = ImageTk.PhotoImage(Image.open('src\\Parallel\\downloaded_image.jpg').resize((345,345)))
+        price_title = Label(price_window, text='Parallel Price', font=('Arial', 12, 'bold'))
+        scrap_price_label = Label(price_window, text=texto_lista, font=('Arial', 12), width=25, borderwidth=1, relief='groove')
+        price_photo_label = Label(price_window, image=img)
+        price_photo_label.image = img
+
+        # Position of Widgets
+        price_title.grid(row=0, column=0, sticky='we', columnspan=2)
+        scrap_price_label.grid(row=1, column=0, padx=8,sticky='we')
+        
+        price_photo_label.grid(row=0, column=1, rowspan=2)
+
+        def on_closing_toplevel(price_window):
+            
+            # Ensure widgets are destroyed properly
+            price_title.destroy() 
+            scrap_price_label.destroy()
+
+            
+            # Destroy the price window itself
+            price_window.destroy()
+
+            # Force garbage collection and reset global variables
+            gc.collect()
+            
+            price_window = None
+            texto_lista = None
+        
+        price_window.protocol("WM_DELETE_WINDOW", lambda: on_closing_toplevel(price_window))
+        stop_auto_print_report_thread_event.set()
+
+    scraping_Parallel_Window = threading.Thread(target=auto_Parallel, daemon=True)
+    scraping_Parallel_Window.start()
 
 def delete_operation(amount, label, label2, label3, label4):
     amount.delete(0, 'end')
@@ -642,7 +655,7 @@ window = Tk()
 
 # Config of window
 window.title('Sidebar Tools')
-window.geometry('340x90+600+635') # Default size of the window & Position.
+window.geometry('340x80+100+648') # Default size of the window & Position.
 window.attributes('-topmost',True) # Makes the window always on top.
 window.iconbitmap('icon.ico')
 window.config(bg='#121212') # Change the background color of the main window.
@@ -807,7 +820,7 @@ def hide():
     hide_event.set()
 
     # Change the size of the window
-    window.geometry('375x40+600+685')
+    window.geometry('375x43+100+685')
 
     # Unmap all the buttons of the first 2 rows
     hide_btn.grid_forget()
@@ -822,7 +835,7 @@ def hide():
     version_label.grid_forget()
 
     # Change the position of the tools buttons to be displayed on a new windows size
-    shown_btn.grid(row=0, column=0, pady=4, sticky='n')
+    shown_btn.grid(row=0, column=0, pady=2, sticky='n')
     close_btn.grid(row=0, column=0, padx=2, pady=0, sticky='s')
 
     igtf_btn.grid(row=0, column=1)
@@ -844,7 +857,7 @@ def shown():
     ping_Server()
 
     # Change the size of the window.
-    window.geometry('340x90+600+635')
+    window.geometry('340x80+100+648')
     
     # Unmap button.
     hide_btn.grid_forget()
@@ -928,7 +941,7 @@ script_btn.grid(row=2, column=3, padx=37, sticky='w')
 
 
 # Row 0, 1
-hide_btn.grid(row=0, column=0, pady=5, ipadx=0, ipady=0)
+hide_btn.grid(row=0, column=0, pady=0, ipadx=0, ipady=0)
 close_btn.grid(row=1, column=0, padx= 5, pady=0, sticky='n')
 
 server_status.grid(row=0, column=1, padx=3,  pady=1, sticky='')
