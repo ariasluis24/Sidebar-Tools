@@ -377,7 +377,9 @@ def scraping_Parallel_Photo():
 
             for date, link in zip(combined_dates, image_links):
                 # TODO: Find an use to this dates and links of parallel prices from previous days.
-                print(f'{date}: {link}\n')
+                # * This links would be on a combobox, when the date is selected it would show the image of the correspondent date.
+                # print(f'{date}: {link}\n')
+                pass
 
             # Send a GET request to the URL for download.
             response = requests.get(image_links[-1], stream=True)
@@ -388,7 +390,7 @@ def scraping_Parallel_Photo():
             with open(output_path, "wb") as file:
                 shutil.copyfileobj(response.raw, file)
 
-            print(f"Image successfully downloaded and saved as {output_path}")
+            # print(f"Image successfully downloaded and saved as {output_path}")
 
     except Exception as e:
         print(e)

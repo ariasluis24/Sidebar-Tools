@@ -16,16 +16,16 @@ def scraping_BCV():
         page_to_scrape = requests.get('https://www.bcv.org.ve', verify=False)
 
         if page_to_scrape.status_code == 200:
-            #TODO Use status code for execeptions. https://github.com/terremoth/get-dollar-value-py/blob/master/dolar-value.py
+            #TODO Use status code for exceptions. https://github.com/terremoth/get-dollar-value-py/blob/master/dolar-value.py
             soup = BeautifulSoup(page_to_scrape.text, 'html.parser')
             parent_container = soup.find(id='dolar')
 
-            # Formating part
+            # Formatting part
             list_BCV = list(parent_container.find('strong').text.strip()) #  Result = ['3', '6', ',', '1', '8', '8', '3', '0', '0', '0', '0']
             list_BCV.remove(',') # Result = ['3', '6', '1', '8', '8', '3', '0', '0', '0', '0']
             list_BCV.insert(2, '.') #Result = ['3', '6', '.', '1', '8', '8', '3', '0', '0', '0', '0']
 
-            str_BCV = ''.join(list_BCV) # Formating list into a single string 36.18830000.
+            str_BCV = ''.join(list_BCV) # Formatting list into a single string 36.18830000.
             
             # Creating and Adding sections and values to the config.ini
             # config.add_section('Date')
