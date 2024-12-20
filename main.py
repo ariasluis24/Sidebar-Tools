@@ -440,6 +440,7 @@ class BCVCalculator:
 
         self.converted = False
         self.currency = 'Dollars'
+        self.add_Text_Result_Shown = False
 
         self.create_widgets()
         self.BCV_window.protocol("WM_DELETE_WINDOW", self.on_closing_toplevel)
@@ -448,7 +449,7 @@ class BCVCalculator:
     def create_widgets(self):
         # Labels, Entry, Buttons
         self.sub_total_entry = Entry(self.BCV_window, font=('Arial', 14), width=14, bg='yellow', justify='center')
-        self.convert_currency_button = Button(self.BCV_window, text='$', font=('Roboto', 8, 'bold'), command=self.convert_value, width=2, height=1) #TODO: Make this button able to convert the introduced values and the results.
+        self.convert_currency_button = Button(self.BCV_window, text='$', font=('Roboto', 8, 'bold'), command=self.convert_value, width=2, height=1)
         self.calculate_button = Button(self.BCV_window, text='Calculate', command=self.calculation_BCV_Parallel, width=10)
         self.delete_button = Button(self.BCV_window, text='Delete', command=self.delete_operation, width=8)
         self.refresh_button = Button(self.BCV_window, text='Refresh', command=self.refresh, width=6)
@@ -528,7 +529,6 @@ class BCVCalculator:
         self.parallel_price.grid(row=4, column=0)    
 
     def calculation_BCV_Parallel(self):
-        
         amount = self.sub_total_entry.get()
 
         def add_Result_Text(Text_widget:Text, result_Description:str, result_operation):
@@ -585,7 +585,9 @@ class BCVCalculator:
                 result_calculation_Parallel = round(Decimal(amount_float * float(self.result_Parallel_future)), 2)
                 difference_between_prices = round(Decimal(result_calculation_Parallel - result_calculation_BCV), 2)
                 difference_percentage = round(Decimal(((result_calculation_Parallel - result_calculation_BCV) / result_calculation_BCV) * 100), 2)
-
+                
+                self.add_Text_Result_Shown = True
+                
                 add_Result_Text(self.result_operation_BCV_Text, 'Price BCV:', result_calculation_BCV)
                 add_Result_Text(self.result_operation_Parallel_Text, 'Price Parallel:', result_calculation_Parallel)
                 add_Result_Text(self.differences_between_Text, 'Gap:', difference_between_prices)
@@ -597,6 +599,8 @@ class BCVCalculator:
                 result_calculation_Parallel = round(Decimal(amount_float / float(self.result_Parallel_future)), 2)
                 difference_between_prices = round(Decimal(result_calculation_BCV - result_calculation_Parallel), 2)
                 difference_percentage = round(Decimal(((result_calculation_BCV - result_calculation_Parallel) / result_calculation_BCV) * 100), 2)
+
+                self.add_Text_Result_Shown = True
 
                 add_Result_Text(self.result_operation_BCV_Text, 'Price BCV:', result_calculation_BCV)
                 add_Result_Text(self.result_operation_Parallel_Text, 'Price Parallel:', result_calculation_Parallel)
@@ -632,9 +636,41 @@ class BCVCalculator:
 
     def convert_value(self):
 
+        def add_Result_Text(Text_widget:Text, result_Description:str, result_operation):
+
+            Text_widget.configure(state='normal')    
+            Text_widget.delete('1.0', END)
+            Text_widget.insert('1.0', f'{result_Description} ', 'initial')
+
+            if self.converted == False:
+            
+                if Text_widget == self.differences_percentage_Text:
+
+                    Text_widget.insert('2.0', f'{result_operation:n} %', 'last')
+            
+                else:
+                    Text_widget.insert('2.0', f'{result_operation:n} Bs', 'last')
+            
+            if self.converted == True:
+            
+                if Text_widget == self.differences_percentage_Text:
+
+                    Text_widget.insert('2.0', f'{result_operation:n} %', 'last')
+            
+                else:
+                    Text_widget.insert('2.0', f'{result_operation:n} $', 'last')
+
+            Text_widget.tag_configure('initial', font=('Arial', 10), justify='center')
+            Text_widget.tag_configure('last', font=('Arial', 10, 'bold'),justify='center')
+
+            Text_widget.configure(state='disabled')
+
         if self.convert_currency_button.cget('text') == '$':
+            print(self.convert_currency_button.cget('text'))
             self.converted = True
+        
         elif self.convert_currency_button.cget('text') == 'Bs':
+            print(self.convert_currency_button.cget('text'))
             self.converted = False
 
         value = float(self.sub_total_entry.get())
@@ -653,10 +689,25 @@ class BCVCalculator:
             result_To_Dollars = round(value / self.result_Parallel_future, 2)
             self.currency = 'Dollars'
 
+            result_calculation_BCV = round(Decimal(value / self.result_BCV_future ), 2)
+            result_calculation_Parallel = round(Decimal(value / float(self.result_Parallel_future)), 2)
+            difference_between_prices = round(Decimal(result_calculation_BCV - result_calculation_Parallel), 2)
+            difference_percentage = round(Decimal(((result_calculation_BCV - result_calculation_Parallel) / result_calculation_BCV) * 100), 2)
+
             self.convert_currency_button.config(text='$')
             
             self.sub_total_entry.delete(0, 'end')
             self.sub_total_entry.insert(0, result_To_Dollars)
+
+            if self.add_Text_Result_Shown == False:
+                add_Result_Text(self.result_operation_BCV_Text, 'Price BCV:', result_calculation_BCV)
+                add_Result_Text(self.result_operation_Parallel_Text, 'Price Parallel:', result_calculation_Parallel)
+                add_Result_Text(self.differences_between_Text, 'Gap:', difference_between_prices)
+                add_Result_Text(self.differences_percentage_Text, 'Difference:', difference_percentage)
+                pass
+
+            elif self.add_Text_Result_Shown == True:
+                pass
 
     
     def refresh(self):
