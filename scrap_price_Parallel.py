@@ -62,9 +62,9 @@ def scraping_Parallel():
 
             # List of sets to filter the div scraped.
             valid_emoji_set = [
-                {'🗓', '🕒', '💵', '🔻'},
-                {'🗓', '🕒', '💵', '🔺'},
-                {'🗓', '🕒', '💵', '🟰'},
+                {'🗓', '🕒', '💵', '🔻', '↔️'},
+                {'🗓', '🕒', '💵', '🔺', '↔️'},
+                {'🗓', '🕒', '💵', '🟰', '↔️'},
             ]
 
             # List to save the result that meet the requirements.
@@ -116,7 +116,7 @@ def scraping_Parallel():
                         results.append([emoji_scraped, text_scraped] )
             
             # Return the list of emojis and text reversed.        
-            return list(reversed(results)) # [['🗓', '06/12/2024'], ['🕒', '8:55 AM'], ['💵', 'Bs. 57,29'], ['\n🔻', '0,73% Bs 0,42']
+            return list(reversed(results)) # [['🗓', '06/12/2024'], ['🕒', '8:55 AM'], ['💵', 'Bs. 57,29'], ['\n🔻', '0,73% Bs 0,42'], ['↔️', '24,93%'], ['\n🔻', 'Canal:']
 
             # ! Old method to scrap the price
             '''
@@ -195,9 +195,9 @@ def scraping_Parallel_Calculator():
 
             # Set of lists to filter the div scraped.
             valid_emoji_set = [
-                {'🗓', '🕒', '💵', '🔻'},
-                {'🗓', '🕒', '💵', '🔺'},
-                {'🗓', '🕒', '💵', '🟰'},
+                {'🗓', '🕒', '💵', '🔻', '↔️'},
+                {'🗓', '🕒', '💵', '🔺', '↔️'},
+                {'🗓', '🕒', '💵', '🟰', '↔️'},
             ]
 
             # List to save the result that meet the requirements.
@@ -236,7 +236,7 @@ def scraping_Parallel_Calculator():
             cut_str:str = results[-1]
 
             # Replace the , of the text with a . to be usable as a float.
-            final_str = cut_str[4:].strip() #! 'Bs. 56,84' => '56,84' Be careful in the future if the price increases, change the index of slicing.
+            final_str = cut_str[3:].strip() #! 'Bs. 56,84' => '56,84' Be careful in the future if the price increases, change the index of slicing.
             
             return final_str.replace(',', '.')
             
@@ -260,7 +260,7 @@ def scraping_Parallel_Calculator():
                         if len(next_text) > 18:
                             next_text = 'Error.'
                         
-                        # If not, strips the text and continous the extract of the price.
+                        # If not, strips the text and continuous the extract of the price.
                         else:
                             text = next_text.strip() if next_text else 'Texto no encontrado'
                         # Almacenar el emoji y su texto en la lista de resultados
@@ -337,9 +337,9 @@ def scraping_Parallel_Photo():
             dates = []
             # Define the valid subsets of emojis
             valid_emoji_sets = [
-                {'🗓', '🕒', '💵', '🔻'},
-                {'🗓', '🕒', '💵', '🔺'},
-                {'🗓', '🕒', '💵', '🟰'},
+                {'🗓', '🕒', '💵', '🔻', '↔️'},
+                {'🗓', '🕒', '💵', '🔺', '↔️'},
+                {'🗓', '🕒', '💵', '🟰', '↔️'},
             ]
 
             # Function to check if a <div> contains any of the valid emoji subsets

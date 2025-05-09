@@ -496,7 +496,7 @@ class BCVCalculator:
     def handle_scraping_result_BCV(self, future):
         
         result_BCV = future.result()
-        self.result_BCV_future = float(result_BCV)     
+        self.result_BCV_future = result_BCV   
         
         self.bcv_price_label.grid_forget()
         
@@ -729,6 +729,7 @@ class BCVCalculator:
 class AutoWindow:
 
     # TODO: Investigate what other task can be automated.
+    # TODO: Automate the making of the document used to put the change transferred to the client
     def __init__(self, master, executor):
         
         self.master = master

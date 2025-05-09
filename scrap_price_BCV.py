@@ -23,7 +23,7 @@ def scraping_BCV():
             # Formatting part
             list_BCV = list(parent_container.find('strong').text.strip()) #  Result = ['3', '6', ',', '1', '8', '8', '3', '0', '0', '0', '0']
             list_BCV.remove(',') # Result = ['3', '6', '1', '8', '8', '3', '0', '0', '0', '0']
-            list_BCV.insert(2, '.') #Result = ['3', '6', '.', '1', '8', '8', '3', '0', '0', '0', '0']
+            list_BCV.insert(2, '.') #Result = ['3', '6', '.', '1', '8', '8', '3', '0', '0', '0', '0'] #TODO change the value of the index from 2 to 3 if the price gets to 100.
 
             str_BCV = ''.join(list_BCV) # Formatting list into a single string 36.18830000.
             
